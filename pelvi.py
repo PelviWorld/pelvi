@@ -15,6 +15,24 @@ class Pelvi:
     def load_user(self, name, lastname):
         return self.__pelvidata.load_user(name, lastname)
 
+    def __find_position(self, axis):
+        for positions in self.__position_list:
+            for position in positions[2]:
+                axisid = position.deviceaxisid
+                axisname = self.axis_name_for_device_axisid(axisid)
+                if axis == axisname:
+                    return position
+
+    def move_axis_by(self, axis, value):
+        position = self.__find_position(axis)
+        if position:
+            position.position = position.position + value
+
+    def move_axis_to(self, axis, value):
+        position = self.__find_position(axis)
+        if position:
+            position.position = value
+
     @property
     def user(self):
         return self.__user
@@ -78,5 +96,10 @@ class Pelvi:
 if __name__ == '__main__':
     pelvi = Pelvi()
     pelvi.print_user_data()
+    pelvi.move_axis_by("Y", 20)
+    pelvi.move_axis_by("C", 22)
+    pelvi.print_user_data()
     pelvi.add_new_user("Test", "Name")
+    pelvi.move_axis_by("B", 110)
+    pelvi.move_axis_to("Y", 333)
     pelvi.print_user_data()
