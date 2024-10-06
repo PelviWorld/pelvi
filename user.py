@@ -24,6 +24,10 @@ class User:
     def userid(self):
         return self.__userid
 
+    @userid.setter
+    def userid(self, userid):
+        self.__userid = userid
+
 if __name__ == '__main__':
     user = User("Volker", "Wengert")
     print(user.userid, user.name, user.lastname)
