@@ -13,13 +13,25 @@ class Position:
     def positionsid(self):
         return self.__positionsid
 
+    @positionsid.setter
+    def positionsid(self, positionsid):
+        self.__positionsid = positionsid
+
     @property
     def deviceaxisid(self):
         return self.__deviceaxisid
 
+    @deviceaxisid.setter
+    def deviceaxisid(self, deviceaxisid):
+        self.__deviceaxisid = deviceaxisid
+
     @property
     def position(self):
         return self.__position
+
+    @position.setter
+    def position(self, pos):
+        self.__position = pos
 
 
 if __name__ == '__main__':

@@ -18,6 +18,19 @@ class Pelvidata:
         self.__database.commit()
         return User(data['name'], data['lastname'], data['userid'])
 
+    def load_user(self, name, lastname):
+        self.__database.row_factory = row_dict
+        cur = self.__database.cursor()
+
+        res = cur.execute("SELECT * from user where name like :name and lastname like :lastname", {'name': name, 'lastname': lastname})
+        if not res.fetchall():
+            return 1
+
+        userid = res.lastrowid
+
+        self.__database.commit()
+        return userid
+
     def get_default_user(self):
         return self.__get_user(1)
 
@@ -87,7 +100,8 @@ class Pelvidata:
         for positions in positions_list:
             pos_list = self.__get_positions_for_positionsid(positions['positionsid'])
             dev_power_list = self.__get_power_for_positionsid(positions['positionsid'])
-            position_list.append([Positions(positions['positionsid'],positions['positionnumber'],positions['userid']), dev_power_list, pos_list])
+            position_list.append([Positions(positions['positionsid'],positions['positionnumber'],positions['duration'],positions['userid']),
+                                  dev_power_list, pos_list])
 
         self.__database.commit()
         return position_list
@@ -127,6 +141,59 @@ class Pelvidata:
 
         self.__database.commit()
         return result
+
+    def check_user_name_not_in_use(self, name, lastname):
+        self.__database.row_factory = row_dict
+        cur = self.__database.cursor()
+
+        res = cur.execute("SELECT * from user where name like :name and lastname like :lastname", {'name': name, 'lastname': lastname})
+
+        self.__database.commit()
+        if not res.fetchall():
+            return True
+        return False
+
+    def add_new_user(self, name, lastname):
+        self.__database.row_factory = row_dict
+        cur = self.__database.cursor()
+
+        cur.execute("""INSERT INTO user (name, lastname) VALUES(?, ?)""", (name, lastname))
+        userid = cur.lastrowid
+
+        self.__database.commit()
+        return userid
+
+    def add_new_positions_head(self, position):
+        self.__database.row_factory = row_dict
+        cur = self.__database.cursor()
+
+        cur.execute("""INSERT INTO positions (userid, positionnumber, duration) VALUES(?,?,?)""",
+                    (position.userid, position.positionsnumber, position.duration))
+        positionsid = cur.lastrowid
+
+        self.__database.commit()
+        return positionsid
+
+    def add_new_position(self, position):
+        self.__database.row_factory = row_dict
+        cur = self.__database.cursor()
+
+        cur.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""",
+                       (position.positionsid, position.deviceaxisid, position.position))
+
+        self.__database.commit()
+
+    def add_new_blocked_area(self, userid, blocked):
+        self.__database.row_factory = row_dict
+        cur = self.__database.cursor()
+
+        cur.execute("""INSERT INTO blockedarea (userid) VALUES(?)""", (userid,))
+        blockedareaid = cur.lastrowid
+        for blockedvalue in blocked:
+            cur.execute("""INSERT INTO blockedvalue (blockedareaid, axisid, minvalue, maxvalue) VALUES (?,?,?,?)""",
+                        (blockedareaid, blockedvalue.axis, blockedvalue.minvalue, blockedvalue.maxvalue))
+
+        self.__database.commit()
 
 def row_dict(cursor, zeile):
     ergebnis = {}
