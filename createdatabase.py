@@ -56,9 +56,9 @@ def create_database(connection):
     defaultuser = cursor.lastrowid
 
     # create device in Back
-    cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("X", 0, 1000, 0)""")
+    cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("X", 0, 300, 0)""")
     axisx = cursor.lastrowid
-    cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("Y", 0, 1000, 0)""")
+    cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("Y", 0, 470, 0)""")
     axisy = cursor.lastrowid
     cursor.execute("""INSERT INTO device (devicename) VALUES("Back")""")
     deviceback = cursor.lastrowid
@@ -68,24 +68,24 @@ def create_database(connection):
     back_device_y = cursor.lastrowid
 
     # create device in Seat
-    cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("A", 0, 1000, 0)""")
-    axisa = cursor.lastrowid
-    cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("B", 0, 1000, 0)""")
-    axisb = cursor.lastrowid
+    cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("Z", 0, 290, 0)""")
+    axisz = cursor.lastrowid
+    cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("E0", 0, 180, 0)""")
+    axise0 = cursor.lastrowid
     cursor.execute("""INSERT INTO device (devicename) VALUES("Seat")""")
     deviceseat = cursor.lastrowid
-    cursor.execute("""INSERT INTO deviceaxis (deviceid, axisid) VALUES(?,?)""", (deviceseat, axisa))
-    seat_device_a = cursor.lastrowid
-    cursor.execute("""INSERT INTO deviceaxis (deviceid, axisid) VALUES(?,?)""", (deviceseat, axisb))
-    seat_device_b = cursor.lastrowid
+    cursor.execute("""INSERT INTO deviceaxis (deviceid, axisid) VALUES(?,?)""", (deviceseat, axisz))
+    seat_device_z = cursor.lastrowid
+    cursor.execute("""INSERT INTO deviceaxis (deviceid, axisid) VALUES(?,?)""", (deviceseat, axise0))
+    seat_device_e0 = cursor.lastrowid
 
     # create device for Leg
-    cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("C", 0, 1000, 0)""")
-    axisc = cursor.lastrowid
+    cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("E1", 0, 180, 0)""")
+    axise1 = cursor.lastrowid
     cursor.execute("""INSERT INTO device (devicename) VALUES("Leg")""")
     deviceleg = cursor.lastrowid
-    cursor.execute("""INSERT INTO deviceaxis (deviceid, axisid) VALUES(?,?)""", (deviceleg, axisc))
-    leg_device_c = cursor.lastrowid
+    cursor.execute("""INSERT INTO deviceaxis (deviceid, axisid) VALUES(?,?)""", (deviceleg, axise1))
+    leg_device_e1 = cursor.lastrowid
 
     # create device for Legrest
     cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("D", 0, 1000, 0)""")
@@ -106,9 +106,9 @@ def create_database(connection):
     positionsid = cursor.lastrowid
     cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, back_device_x, 0))
     cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, back_device_y, 0))
-    cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, seat_device_a, 0))
-    cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, seat_device_b, 0))
-    cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, leg_device_c, 0))
+    cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, seat_device_z, 0))
+    cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, seat_device_e0, 0))
+    cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, leg_device_e1, 0))
     cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, legrest_device_d, 0))
 
     connection.commit()
