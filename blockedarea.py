@@ -1,10 +1,11 @@
 from axis import Axis
 
 class Blockedvalues:
-    def __init__(self, axis, minvalue, maxvalue):
+    def __init__(self, axis, minvalue, maxvalue, blockedvalueid=-1):
         self.__axis = axis
         self.__minvalue = minvalue
         self.__maxvalue = maxvalue
+        self.__blockedvalueid = blockedvalueid
 
     @property
     def axis(self):
@@ -25,6 +26,14 @@ class Blockedvalues:
     @maxvalue.setter
     def maxvalue(self, maxvalue):
         self.__maxvalue = maxvalue
+
+    @property
+    def blockedvalueid(self):
+        return self.__blockedvalueid
+
+    @blockedvalueid.setter
+    def blockedvalueid(self, blockedvalueid):
+        self.__blockedvalueid = blockedvalueid
 
 
 class Blockedarea:
