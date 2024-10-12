@@ -19,7 +19,7 @@ class Pelvi:
         for positions in self.__position_list:
             for position in positions[2]:
                 axisid = position.deviceaxisid
-                axisname = self.axis_name_for_device_axisid(axisid)
+                axisname = self.__axis_name_for_device_axisid(axisid)
                 if axis == axisname:
                     return position
 
@@ -57,6 +57,9 @@ class Pelvi:
             position.position = boundaries[1]
         return position.position
 
+    def get_axis_value(self, axis):
+        position = self.__find_position(axis)
+        return position.position
 
     def save_user_data(self):
         self.__pelvidata.save_user_data(self.__user, self.__position_list, self.__blocked_list)
@@ -95,7 +98,7 @@ class Pelvi:
 
         self.__pelvidata.add_blocked_area(self.__user.userid, self.__blocked_list)
 
-    def axis_name_for_device_axisid(self, device_axis_id):
+    def __axis_name_for_device_axisid(self, device_axis_id):
         return self.__device_axis_list[device_axis_id]
 
     def print_user_data(self):
@@ -112,7 +115,7 @@ class Pelvi:
             for power in positions[1]:
                 print("Device", power['deviceid'], power['power'])
             for axis_position in positions[2]:
-                print("Axis", self.axis_name_for_device_axisid(axis_position.deviceaxisid), "Position",
+                print("Axis", self.__axis_name_for_device_axisid(axis_position.deviceaxisid), "Position",
                       axis_position.position)
 
         print("BLOCKS:")
@@ -134,3 +137,4 @@ if __name__ == '__main__':
     print("moving Y by -99 results", pelvi.move_axis_by("Y", -99))
     pelvi.print_user_data()
     pelvi.save_user_data()
+    print("Axix Value from Y is", pelvi.get_axis_value("Y"))
