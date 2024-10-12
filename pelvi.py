@@ -23,15 +23,42 @@ class Pelvi:
                 if axis == axisname:
                     return position
 
+    def __get_range(self, axis):
+        for device in self.device_list:
+            for device_axis in device.axislist:
+                if device_axis.axisname == axis:
+                    return device_axis.minvalue, device_axis.maxvalue
+
     def move_axis_by(self, axis, value):
         position = self.__find_position(axis)
-        if position:
+        boundaries = self.__get_range(axis)
+        pos = position.position
+        if boundaries and position:
             position.position = position.position + value
+        else:
+            return 0
+
+        if position.position < boundaries[0]:
+            position.position = boundaries[0]
+        elif position.position > boundaries[1]:
+            position.position = boundaries[1]
+        return position.position - pos
 
     def move_axis_to(self, axis, value):
         position = self.__find_position(axis)
-        if position:
+        boundaries = self.__get_range(axis)
+        pos = position.position
+        if boundaries and position:
             position.position = value
+        else:
+            return 0
+
+        if position.position < boundaries[0]:
+            position.position = boundaries[0]
+        elif position.position > boundaries[1]:
+            position.position = boundaries[1]
+        return position.position - pos
+
 
     def save_user_data(self):
         self.__pelvidata.save_user_data(self.__user, self.__position_list, self.__blocked_list)
@@ -94,17 +121,17 @@ class Pelvi:
         for blocked in self.blocked_list:
             print("Blockvalue Axis:", blocked.axis, "Min Value:", blocked.minvalue, "Max Value", blocked.maxvalue)
 
-
-
 if __name__ == '__main__':
     pelvi = Pelvi()
     pelvi.print_user_data()
-    pelvi.move_axis_by("Y", 20)
-    pelvi.move_axis_by("C", 22)
+    print("moving Y by 20 results", pelvi.move_axis_by("Y", 20))
+    print("moving C by 22 results", pelvi.move_axis_by("C", 22))
     pelvi.print_user_data()
     pelvi.save_user_data()
     pelvi.add_new_user("Test", "Name")
-    pelvi.move_axis_by("B", 110)
-    pelvi.move_axis_to("Y", 333)
+    print("moving B by 110 results", pelvi.move_axis_by("B", 110))
+    print("moving Y to 333 results", pelvi.move_axis_to("Y", 333))
+    print("moving Y by 999 results", pelvi.move_axis_by("Y", 999))
+    print("moving Y by -99 results", pelvi.move_axis_by("Y", -99))
     pelvi.print_user_data()
     pelvi.save_user_data()
