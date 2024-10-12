@@ -56,16 +56,16 @@ class Pelvi:
             return
         self.__user.name = name
         self.__user.lastname = lastname
-        self.__user.userid = self.__pelvidata.add_new_user(name, lastname)
+        self.__user.userid = self.__pelvidata.add_user(name, lastname)
 
         for position in self.__position_list:
             position[0].userid = self.__user.userid
-            positionsid = self.__pelvidata.add_new_positions_head(position[0])
+            positionsid = self.__pelvidata.add_positions_head(position[0])
             for position_in_positionlist in position[2]:
                 position_in_positionlist.positionsid = positionsid
-                self.__pelvidata.add_new_position(position_in_positionlist)
+                self.__pelvidata.add_position(position_in_positionlist)
 
-        self.__pelvidata.add_new_blocked_area(self.__user.userid, self.__blocked_list)
+        self.__pelvidata.add_blocked_area(self.__user.userid, self.__blocked_list)
 
     def axis_name_for_device_axisid(self, device_axis_id):
         return self.__device_axis_list[device_axis_id]

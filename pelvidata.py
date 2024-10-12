@@ -117,7 +117,7 @@ class Pelvidata:
             res = cur.execute("SELECT * from blockedvalue where blockedareaid = :blockedareaid", {'blockedareaid': area['blockedareaid']})
             blocked_list = res.fetchall()
             for value in blocked_list:
-                blockedarea_list.append(Blockedvalues(value['axisid'], value['minvalue'], value['maxvalue']))
+                blockedarea_list.append(Blockedvalues(value['axisid'], value['minvalue'], value['maxvalue'], value['blockedvalueid']))
 
         self.__database.commit()
         return blockedarea_list
@@ -153,7 +153,7 @@ class Pelvidata:
             return True
         return False
 
-    def add_new_user(self, name, lastname):
+    def add_user(self, name, lastname):
         self.__database.row_factory = row_dict
         cur = self.__database.cursor()
 
@@ -163,7 +163,20 @@ class Pelvidata:
         self.__database.commit()
         return userid
 
-    def add_new_positions_head(self, position):
+    def update_user(self, user):
+        if user.userid == -1:
+            self.add_user(user.name, user.lastname)
+            return
+
+        self.__database.row_factory = row_dict
+        cur = self.__database.cursor()
+
+        cur.execute("""UPDATE user SET name = :name, lastname = :lastname WHERE userid = :userid""",
+                    {'name': user.name, 'lastname': user.lastname, 'userid': user.userid})
+
+        self.__database.commit()
+
+    def add_positions_head(self, position):
         self.__database.row_factory = row_dict
         cur = self.__database.cursor()
 
@@ -174,26 +187,82 @@ class Pelvidata:
         self.__database.commit()
         return positionsid
 
-    def add_new_position(self, position):
+    def update_positions_head(self, positions):
+        if positions.positionsid == -1:
+            return self.add_positions_head(positions)
+        self.__database.row_factory = row_dict
+        cur = self.__database.cursor()
+
+        cur.execute("""UPDATE positions SET positionnumber = :positionnumber, duration = :duration WHERE positionsid = :positionsid""",
+                    {'positionnumber': positions.positionsnumber, 'duration': positions.duration, 'positionsid': positions.positionsid})
+        positionsid = cur.lastrowid
+
+        self.__database.commit()
+        return positionsid
+
+    def add_position(self, position):
         self.__database.row_factory = row_dict
         cur = self.__database.cursor()
 
         cur.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""",
                        (position.positionsid, position.deviceaxisid, position.position))
+        positionid = cur.lastrowid
+        position.positionid = positionid
 
         self.__database.commit()
 
-    def add_new_blocked_area(self, userid, blocked):
+    def update_position(self, position):
+        if position.positionid == -1:
+            self.add_position(position)
+            return
+
+        self.__database.row_factory = row_dict
+        cur = self.__database.cursor()
+
+        cur.execute("""UPDATE position SET positionsid = :positionsid, deviceaxisid = :deviceaxisid, position = :position WHERE positionid = :positionid""",
+                    {'positionsid': position.positionsid, 'deviceaxisid': position.deviceaxisid, 'position': position.position, 'positionid': position.positionid})
+
+    def add_blocked_area_head(self, userid):
         self.__database.row_factory = row_dict
         cur = self.__database.cursor()
 
         cur.execute("""INSERT INTO blockedarea (userid) VALUES(?)""", (userid,))
         blockedareaid = cur.lastrowid
+
+        self.__database.commit()
+        return blockedareaid
+
+    def add_blocked_area(self, userid, blocked):
+        self.__database.row_factory = row_dict
+        cur = self.__database.cursor()
+
+        blockedareaid = self.add_blocked_area_head(userid)
         for blockedvalue in blocked:
             cur.execute("""INSERT INTO blockedvalue (blockedareaid, axisid, minvalue, maxvalue) VALUES (?,?,?,?)""",
                         (blockedareaid, blockedvalue.axis, blockedvalue.minvalue, blockedvalue.maxvalue))
+            blockedvalueid = cur.lastrowid
+            blockedvalue.blockedvalueid = blockedvalueid
 
         self.__database.commit()
+
+    def update_blocked_area(self, userid, blocked):
+        self.__database.row_factory = row_dict
+        cur = self.__database.cursor()
+
+        for blockedvalue in blocked:
+            cur.execute("""UPDATE blockedvalue SET axisid = :axisid, minvalue = :minvalue, maxvalue = :maxvalue WHERE blockedvalueid = :blockedvalueid""",
+                        {'axisid': blockedvalue.axis, 'minvalue': blockedvalue.minvalue, 'maxvalue': blockedvalue.maxvalue, 'blockedvalueid': blockedvalue.blockedvalueid})
+
+        self.__database.commit()
+
+    def save_user_data(self, user, position_list, blocked_list):
+        self.update_user(user)
+        for position in position_list:
+            positionsid = self.update_positions_head(position[0])
+            for pos in position[2]:
+                self.update_position(pos)
+        self.update_blocked_area(user.userid, blocked_list)
+
 
 def row_dict(cursor, zeile):
     ergebnis = {}
