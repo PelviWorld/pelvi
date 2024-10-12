@@ -9,6 +9,10 @@ class Position:
     def positionid(self):
         return self.__positionid
 
+    @positionid.setter
+    def positionid(self, positionid):
+        self.__positionid = positionid
+
     @property
     def positionsid(self):
         return self.__positionsid
@@ -30,10 +34,10 @@ class Position:
         return self.__position
 
     @position.setter
-    def position(self, pos):
-        self.__position = pos
+    def position(self, position):
+        self.__position = position
 
 
 if __name__ == '__main__':
-    position = Position(0, 0, 1)
-    print(position.positionid, position.positionsid, position.deviceaxisid)
+    pos = Position(0, 0, 1)
+    print(pos.positionid, pos.positionsid, pos.deviceaxisid)
