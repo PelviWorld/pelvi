@@ -32,32 +32,30 @@ class Pelvi:
     def move_axis_by(self, axis, value):
         position = self.__find_position(axis)
         boundaries = self.__get_range(axis)
-        pos = position.position
         if boundaries and position:
             position.position = position.position + value
         else:
-            return 0
+            return None
 
         if position.position < boundaries[0]:
             position.position = boundaries[0]
         elif position.position > boundaries[1]:
             position.position = boundaries[1]
-        return position.position - pos
+        return position.position
 
     def move_axis_to(self, axis, value):
         position = self.__find_position(axis)
         boundaries = self.__get_range(axis)
-        pos = position.position
         if boundaries and position:
             position.position = value
         else:
-            return 0
+            return None
 
         if position.position < boundaries[0]:
             position.position = boundaries[0]
         elif position.position > boundaries[1]:
             position.position = boundaries[1]
-        return position.position - pos
+        return position.position
 
 
     def save_user_data(self):
