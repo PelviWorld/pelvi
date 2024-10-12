@@ -33,6 +33,9 @@ class Pelvi:
         if position:
             position.position = value
 
+    def save_user_data(self):
+        self.__pelvidata.save_user_data(self.__user, self.__position_list, self.__blocked_list)
+
     @property
     def user(self):
         return self.__user
@@ -99,7 +102,9 @@ if __name__ == '__main__':
     pelvi.move_axis_by("Y", 20)
     pelvi.move_axis_by("C", 22)
     pelvi.print_user_data()
+    pelvi.save_user_data()
     pelvi.add_new_user("Test", "Name")
     pelvi.move_axis_by("B", 110)
     pelvi.move_axis_to("Y", 333)
     pelvi.print_user_data()
+    pelvi.save_user_data()
