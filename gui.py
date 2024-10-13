@@ -21,9 +21,6 @@ except ImportError:
 
 # Funktionen zum Bewegen und Aktualisieren der Positionen
 def move_to_xy(x, y):
-    if is_inside_circle(x, y):
-        print("Bewegung in den roten Kreis ist nicht erlaubt.")
-        return
     _pelvi.move_axis_to("X", x)
     _pelvi.move_axis_to("Y", y)
     _arduino.send_coordinates('XY',_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y"))
@@ -87,24 +84,10 @@ def update_point_e1():
     point_e1 = canvas_e1.create_oval(45, e1_pixel -5, 55, e1_pixel +5, fill='blue')
 
 # Funktionen zum Bewegen des roten Kreises
-def move_circle_x_positive():
-    adjust_circle_position(dx=10, dy=0)
-
-def move_circle_x_negative():
-    adjust_circle_position(dx=-10, dy=0)
-
-def move_circle_y_positive():
-    adjust_circle_position(dx=0, dy=-10)
-
-def move_circle_y_negative():
-    adjust_circle_position(dx=0, dy=10)
-
 def adjust_circle_position(dx=0, dy=0):
     global circle_center_x_mm, circle_center_y_mm
-    x_max_pos = 300
-    y_max_pos = 470
-    circle_center_x_mm = max(0, min(x_max_pos, circle_center_x_mm + dx))
-    circle_center_y_mm = max(0, min(y_max_pos, circle_center_y_mm + dy))
+    circle_center_x_mm = max(0, min(_pelvi.get_axis_range("X"), circle_center_x_mm + dx))
+    circle_center_y_mm = max(0, min(_pelvi.get_axis_range("Y"), circle_center_y_mm + dy))
     update_red_circle()
 
 def update_red_circle():
@@ -124,14 +107,18 @@ def update_red_circle():
         tags='red_circle'
     )
 
-def move_by(pelvi, axis, value):
-    pelvi.move_axis_by(axis, value)
+def move_by(axis, value):
+    _pelvi.move_axis_by(axis, value)
     if axis == 'X' or axis == 'Y':
-        move_to_xy(pelvi.get_axis_value("X"), pelvi.get_axis_value("Y"))
+        if is_inside_circle(_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y")):
+            print("Bewegung in den roten Kreis ist nicht erlaubt.")
+            _pelvi.move_axis_by(axis, -value)
+            return
+        move_to_xy(_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y"))
     elif axis == 'Z' or axis == 'E0':
-        move_to_ze0(pelvi.get_axis_value("Z"), pelvi.get_axis_value("E0"))
+        move_to_ze0(_pelvi.get_axis_value("Z"), _pelvi.get_axis_value("E0"))
     elif axis == 'E1':
-        move_to_e1(pelvi.get_axis_value("E1"))
+        move_to_e1(_pelvi.get_axis_value("E1"))
 
 # Funktionen für den DC-Motor
 def motor_forward():
@@ -234,16 +221,16 @@ if __name__ == '__main__':
     button_frame_xy = ttk.Frame(frame_xy)
     button_frame_xy.pack(pady=5)
 
-    btn_x_negative = ttk.Button(button_frame_xy, text='←', command=lambda: move_by(_pelvi, "X", -10), width=3)
+    btn_x_negative = ttk.Button(button_frame_xy, text='←', command=lambda: move_by("X", -10), width=3)
     btn_x_negative.grid(row=0, column=0, padx=2)
 
-    btn_x_positive = ttk.Button(button_frame_xy, text='→', command=lambda: move_by(_pelvi, "X", 10), width=3)
+    btn_x_positive = ttk.Button(button_frame_xy, text='→', command=lambda: move_by("X", 10), width=3)
     btn_x_positive.grid(row=0, column=1, padx=2)
 
-    btn_y_negative = ttk.Button(button_frame_xy, text='↓', command=lambda: move_by(_pelvi, "Y", 10), width=3)
+    btn_y_negative = ttk.Button(button_frame_xy, text='↓', command=lambda: move_by("Y", 10), width=3)
     btn_y_negative.grid(row=1, column=0, padx=2)
 
-    btn_y_positive = ttk.Button(button_frame_xy, text='↑', command=lambda: move_by(_pelvi, "Y", -10), width=3)
+    btn_y_positive = ttk.Button(button_frame_xy, text='↑', command=lambda: move_by("Y", -10), width=3)
     btn_y_positive.grid(row=1, column=1, padx=2)
 
     # Steuerung für den roten Kreis
@@ -253,16 +240,16 @@ if __name__ == '__main__':
     label_circle = ttk.Label(frame_circle, text="Roter Punkt bewegen")
     label_circle.grid(row=0, column=0, columnspan=2)
 
-    btn_circle_x_negative = ttk.Button(frame_circle, text='←', command=move_circle_x_negative, width=3)
+    btn_circle_x_negative = ttk.Button(frame_circle, text='←', command=lambda: adjust_circle_position(-10, 0), width=3)
     btn_circle_x_negative.grid(row=1, column=0, padx=2)
 
-    btn_circle_x_positive = ttk.Button(frame_circle, text='→', command=move_circle_x_positive, width=3)
+    btn_circle_x_positive = ttk.Button(frame_circle, text='→', command=lambda: adjust_circle_position(10, 0), width=3)
     btn_circle_x_positive.grid(row=1, column=1, padx=2)
 
-    btn_circle_y_negative = ttk.Button(frame_circle, text='↓', command=move_circle_y_negative, width=3)
+    btn_circle_y_negative = ttk.Button(frame_circle, text='↓', command=lambda: adjust_circle_position(0, 10), width=3)
     btn_circle_y_negative.grid(row=2, column=0, padx=2)
 
-    btn_circle_y_positive = ttk.Button(frame_circle, text='↑', command=move_circle_y_positive, width=3)
+    btn_circle_y_positive = ttk.Button(frame_circle, text='↑', command=lambda: adjust_circle_position(0, -10), width=3)
     btn_circle_y_positive.grid(row=2, column=1, padx=2)
 
     # -------------------- ZE0 Achsen --------------------
@@ -292,16 +279,16 @@ if __name__ == '__main__':
     button_frame_ze0 = ttk.Frame(frame_ze0)
     button_frame_ze0.pack(pady=5)
 
-    btn_z_negative = ttk.Button(button_frame_ze0, text='←', command=lambda: move_by(_pelvi, "Z", -10), width=3)
+    btn_z_negative = ttk.Button(button_frame_ze0, text='←', command=lambda: move_by("Z", -10), width=3)
     btn_z_negative.grid(row=0, column=0, padx=2)
 
-    btn_z_positive = ttk.Button(button_frame_ze0, text='→', command=lambda: move_by(_pelvi, "Z", 10), width=3)
+    btn_z_positive = ttk.Button(button_frame_ze0, text='→', command=lambda: move_by("Z", 10), width=3)
     btn_z_positive.grid(row=0, column=1, padx=2)
 
-    btn_e0_negative = ttk.Button(button_frame_ze0, text='↓', command=lambda: move_by(_pelvi, "E0", 10), width=3)
+    btn_e0_negative = ttk.Button(button_frame_ze0, text='↓', command=lambda: move_by("E0", 10), width=3)
     btn_e0_negative.grid(row=1, column=0, padx=2)
 
-    btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=lambda: move_by(_pelvi, "E0", -10), width=3)
+    btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=lambda: move_by("E0", -10), width=3)
     btn_e0_positive.grid(row=1, column=1, padx=2)
 
     # -------------------- E1 Achse --------------------
@@ -330,10 +317,10 @@ if __name__ == '__main__':
     button_frame_e1 = ttk.Frame(frame_e1)
     button_frame_e1.pack(pady=5)
 
-    btn_e1_negative = ttk.Button(button_frame_e1, text='↓', command=lambda: move_by(_pelvi, "E1", 10), width=3)
+    btn_e1_negative = ttk.Button(button_frame_e1, text='↓', command=lambda: move_by("E1", 10), width=3)
     btn_e1_negative.pack()
 
-    btn_e1_positive = ttk.Button(button_frame_e1, text='↑', command=lambda: move_by(_pelvi, "E1", -10), width=3)
+    btn_e1_positive = ttk.Button(button_frame_e1, text='↑', command=lambda: move_by("E1", -10), width=3)
     btn_e1_positive.pack()
 
     # -------------------- DC-Motor-Steuerung --------------------
