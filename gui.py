@@ -112,6 +112,10 @@ def update_red_circle():
 def move_by(axis, value):
     _pelvi.move_axis_by(axis, value)
     if axis == 'X' or axis == 'Y':
+        if is_inside_circle(_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y")):
+            _pelvi.move_axis_by(axis, -value)
+            print("Bewegung in den roten Kreis ist nicht erlaubt.")
+            return
         move_to_xy(_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y"))
     elif axis == 'Z' or axis == 'E0':
         move_to_ze0(_pelvi.get_axis_value("Z"), _pelvi.get_axis_value("E0"))
