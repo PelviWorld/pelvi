@@ -1,4 +1,4 @@
-from axis import Axis
+from pelvi.axis import Axis
 
 class Blockedvalues:
     def __init__(self, axis, minvalue, maxvalue, blockedvalueid=-1):

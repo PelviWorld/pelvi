@@ -7,22 +7,6 @@ import time
 arduino_port = 'COM7'  # Passen Sie den Port an
 arduino_baudrate = 115200
 
-# Prüfen, ob Pillow installiert ist
-try:
-    from PIL import Image, ImageTk
-except ImportError:
-    print("Pillow ist nicht installiert. Bitte installieren Sie es mit 'pip install Pillow'.")
-    Image = None
-
-# Funktion, um zu prüfen, ob der Arduino verbunden ist
-def is_arduino_connected(port, baudrate=115200):
-    try:
-        ser = serial.Serial(port, baudrate)
-        ser.close()
-        return True
-    except:
-        return False
-
 # Maximale Achsenpositionen
 X_MAX_POS = 300.0
 Y_MAX_POS = 470.0
@@ -41,6 +25,23 @@ current_e1 = 0
 point_xy = None
 point_ze0 = None
 point_e1 = None
+
+
+# Prüfen, ob Pillow installiert ist
+try:
+    from PIL import Image, ImageTk
+except ImportError:
+    print("Pillow ist nicht installiert. Bitte installieren Sie es mit 'pip install Pillow'.")
+    Image = None
+
+# Funktion, um zu prüfen, ob der Arduino verbunden ist
+def is_arduino_connected(port, baudrate=115200):
+    try:
+        ser = serial.Serial(port, baudrate)
+        ser.close()
+        return True
+    except:
+        return False
 
 # Funktion zum Senden der Koordinaten
 def send_coordinates(axis, *args):

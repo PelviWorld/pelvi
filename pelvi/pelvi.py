@@ -1,4 +1,4 @@
-from pelvidata import Pelvidata
+from pelvi.pelvidata import Pelvidata
 
 class Pelvi:
     def __init__(self):
