@@ -38,25 +38,25 @@ except ImportError:
 
 # Funktion zum Senden der Koordinaten
 def send_coordinates(axis, *args):
-    if arduino:
+    if _arduino:
         if axis == 'XY':
             x_mm, y_mm = args
             command = f"XY {x_mm},{y_mm}\n"
-            arduino.write(command.encode())
+            _arduino.write(command.encode())
             print(f"Gesendet: {command.strip()}")
         elif axis == 'ZE0':
             z_mm, e0_mm = args
             command = f"ZE0 {z_mm},{e0_mm}\n"
-            arduino.write(command.encode())
+            _arduino.write(command.encode())
             print(f"Gesendet: {command.strip()}")
         elif axis == 'E1':
             e1_mm = args[0]
             command = f"E1 {e1_mm}\n"
-            arduino.write(command.encode())
+            _arduino.write(command.encode())
             print(f"Gesendet: {command.strip()}")
         elif axis == 'MOTOR':
             command = f"{args[0]}\n"
-            arduino.write(command.encode())
+            _arduino.write(command.encode())
             print(f"Gesendet: {command.strip()}")
     else:
         print("Arduino ist nicht verbunden.")
@@ -151,36 +151,14 @@ def update_red_circle():
         tags='red_circle'
     )
 
-# Funktionen für die Buttons
-def move_x_positive():
-    move_to_xy(current_x + 10, current_y)
-
-def move_x_negative():
-    move_to_xy(current_x - 10, current_y)
-
-def move_y_positive():
-    move_to_xy(current_x, current_y + 10)
-
-def move_y_negative():
-    move_to_xy(current_x, current_y - 10)
-
-def move_z_positive():
-    move_to_ze0(current_z + 10, current_e0)
-
-def move_z_negative():
-    move_to_ze0(current_z - 10, current_e0)
-
-def move_e0_positive():
-    move_to_ze0(current_z, current_e0 + 10)
-
-def move_e0_negative():
-    move_to_ze0(current_z, current_e0 - 10)
-
-def move_e1_positive():
-    move_to_e1(current_e1 + 10)
-
-def move_e1_negative():
-    move_to_e1(current_e1 - 10)
+def move_by(pelvi, axis, value):
+    pelvi.move_axis_by(axis, value)
+    if axis == 'X' or axis == 'Y':
+        move_to_xy(pelvi.get_axis_value("X"), pelvi.get_axis_value("Y"))
+    elif axis == 'Z' or axis == 'E0':
+        move_to_ze0(pelvi.get_axis_value("Z"), pelvi.get_axis_value("E0"))
+    elif axis == 'E1':
+        move_to_e1(pelvi.get_axis_value("E1"))
 
 # Funktionen für den DC-Motor
 def motor_forward():
@@ -196,8 +174,8 @@ def motor_stop():
     print("Motor gestoppt.")
 
 if __name__ == '__main__':
-    pelvi = Pelvi()
-    arduino = Arduino(arduino_port, arduino_baudrate)
+    _pelvi = Pelvi()
+    _arduino = Arduino(arduino_port, arduino_baudrate)
 
     # Hauptfenster erstellen
     root = tk.Tk()
@@ -287,16 +265,16 @@ if __name__ == '__main__':
     button_frame_xy = ttk.Frame(frame_xy)
     button_frame_xy.pack(pady=5)
 
-    btn_x_negative = ttk.Button(button_frame_xy, text='←', command=move_x_negative, width=3)
+    btn_x_negative = ttk.Button(button_frame_xy, text='←', command=lambda: move_by(_pelvi, "X", -10), width=3)
     btn_x_negative.grid(row=0, column=0, padx=2)
 
-    btn_x_positive = ttk.Button(button_frame_xy, text='→', command=move_x_positive, width=3)
+    btn_x_positive = ttk.Button(button_frame_xy, text='→', command=lambda: move_by(_pelvi, "X", 10), width=3)
     btn_x_positive.grid(row=0, column=1, padx=2)
 
-    btn_y_negative = ttk.Button(button_frame_xy, text='↓', command=move_y_negative, width=3)
+    btn_y_negative = ttk.Button(button_frame_xy, text='↓', command=lambda: move_by(_pelvi, "Y", 10), width=3)
     btn_y_negative.grid(row=1, column=0, padx=2)
 
-    btn_y_positive = ttk.Button(button_frame_xy, text='↑', command=move_y_positive, width=3)
+    btn_y_positive = ttk.Button(button_frame_xy, text='↑', command=lambda: move_by(_pelvi, "Y", -10), width=3)
     btn_y_positive.grid(row=1, column=1, padx=2)
 
     # Steuerung für den roten Kreis
@@ -350,16 +328,16 @@ if __name__ == '__main__':
     button_frame_ze0 = ttk.Frame(frame_ze0)
     button_frame_ze0.pack(pady=5)
 
-    btn_z_negative = ttk.Button(button_frame_ze0, text='←', command=move_z_negative, width=3)
+    btn_z_negative = ttk.Button(button_frame_ze0, text='←', command=lambda: move_by(_pelvi, "Z", -10), width=3)
     btn_z_negative.grid(row=0, column=0, padx=2)
 
-    btn_z_positive = ttk.Button(button_frame_ze0, text='→', command=move_z_positive, width=3)
+    btn_z_positive = ttk.Button(button_frame_ze0, text='→', command=lambda: move_by(_pelvi, "Z", 10), width=3)
     btn_z_positive.grid(row=0, column=1, padx=2)
 
-    btn_e0_negative = ttk.Button(button_frame_ze0, text='↓', command=move_e0_negative, width=3)
+    btn_e0_negative = ttk.Button(button_frame_ze0, text='↓', command=lambda: move_by(_pelvi, "E0", 10), width=3)
     btn_e0_negative.grid(row=1, column=0, padx=2)
 
-    btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=move_e0_positive, width=3)
+    btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=lambda: move_by(_pelvi, "E0", -10), width=3)
     btn_e0_positive.grid(row=1, column=1, padx=2)
 
     # -------------------- E1 Achse --------------------
@@ -392,10 +370,10 @@ if __name__ == '__main__':
     button_frame_e1 = ttk.Frame(frame_e1)
     button_frame_e1.pack(pady=5)
 
-    btn_e1_negative = ttk.Button(button_frame_e1, text='↓', command=move_e1_negative, width=3)
+    btn_e1_negative = ttk.Button(button_frame_e1, text='↓', command=lambda: move_by(_pelvi, "E1", 10), width=3)
     btn_e1_negative.pack()
 
-    btn_e1_positive = ttk.Button(button_frame_e1, text='↑', command=move_e1_positive, width=3)
+    btn_e1_positive = ttk.Button(button_frame_e1, text='↑', command=lambda: move_by(_pelvi, "E1", -10), width=3)
     btn_e1_positive.pack()
 
     # -------------------- DC-Motor-Steuerung --------------------
