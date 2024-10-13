@@ -122,6 +122,11 @@ class Pelvi:
         for blocked in self.blocked_list:
             print("Blockvalue Axis:", blocked.axis, "Min Value:", blocked.minvalue, "Max Value", blocked.maxvalue)
 
+    def get_axis_range(self, axis):
+        minimum, maximum = self.__get_range("X")
+        return maximum - minimum
+
+
 if __name__ == '__main__':
     pelvi = Pelvi()
     pelvi.print_user_data()

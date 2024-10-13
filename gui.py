@@ -7,13 +7,6 @@ from pelvi.arduino import Arduino
 arduino_port = 'COM7'  # Passen Sie den Port an
 arduino_baudrate = 115200
 
-# TODO: replace it with values from db, Maximale Achsenpositionen
-X_MAX_POS = 300.0
-Y_MAX_POS = 470.0
-Z_MAX_POS = 290.0
-E0_MAX_POS = 180.0
-E1_MAX_POS = 180.0
-
 # IDs der Punkte auf den Canvas
 point_xy = None
 point_ze0 = None
@@ -37,8 +30,8 @@ def move_to_xy(x, y):
     update_point_xy()
 
 def click_canvas_xy(event):
-    x_mm = event.x / scale_x
-    y_mm = event.y / scale_y
+    x_mm = int(event.x / scale_x)
+    y_mm = int(event.y / scale_y)
     if is_inside_circle(x_mm, y_mm):
         print("Klick innerhalb des roten Kreises. Keine Aktion.")
         return
@@ -65,8 +58,8 @@ def move_to_ze0(z, e0):
     update_point_ze0()
 
 def click_canvas_ze0(event):
-    z_mm = event.x / scale_z
-    e0_mm = event.y / scale_e0
+    z_mm = int(event.x / scale_z)
+    e0_mm = int(event.y / scale_e0)
     move_to_ze0(z_mm, e0_mm)
 
 def update_point_ze0():
@@ -83,7 +76,7 @@ def move_to_e1(e1):
     update_point_e1()
 
 def click_canvas_e1(event):
-    e1_mm = event.y / scale_e1
+    e1_mm = int(event.y / scale_e1)
     move_to_e1(e1_mm)
 
 def update_point_e1():
@@ -173,21 +166,21 @@ if __name__ == '__main__':
     canvas_width_xy = 300
     canvas_height_xy = 470
 
-    scale_x = canvas_width_xy / X_MAX_POS
-    scale_y = canvas_height_xy / Y_MAX_POS
+    scale_x = canvas_width_xy / _pelvi.get_axis_range("X")
+    scale_y = canvas_height_xy / _pelvi.get_axis_range("Y")
 
     # Für ZE0 Canvas
     canvas_width_ze0 = 290
     canvas_height_ze0 = 180
 
-    scale_z = canvas_width_ze0 / Z_MAX_POS
-    scale_e0 = canvas_height_ze0 / E0_MAX_POS
+    scale_z = canvas_width_ze0 / _pelvi.get_axis_range("Z")
+    scale_e0 = canvas_height_ze0 / _pelvi.get_axis_range("E0")
 
     # Für E1 Canvas
     canvas_width_e1 = 100
-    canvas_height_e1 = E1_MAX_POS
+    canvas_height_e1 = _pelvi.get_axis_range("E1")
 
-    scale_e1 = canvas_height_e1 / E1_MAX_POS
+    scale_e1 = canvas_height_e1 / _pelvi.get_axis_range("E1")
 
     # Roter Kreis im XY-Feld
     circle_center_x_mm = 200.0
