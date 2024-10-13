@@ -236,10 +236,10 @@ def create_xy_frame(_canvas_frame):
     btn_x_negative.grid(row=0, column=0, padx=2)
     btn_x_positive = ttk.Button(button_frame_xy, text='→', command=lambda: move_by("X", 10), width=3)
     btn_x_positive.grid(row=0, column=1, padx=2)
-    btn_y_negative = ttk.Button(button_frame_xy, text='↓', command=lambda: move_by("Y", 10), width=3)
-    btn_y_negative.grid(row=1, column=0, padx=2)
-    btn_y_positive = ttk.Button(button_frame_xy, text='↑', command=lambda: move_by("Y", -10), width=3)
-    btn_y_positive.grid(row=1, column=1, padx=2)
+    btn_y_positive = ttk.Button(button_frame_xy, text='↓', command=lambda: move_by("Y", 10), width=3)
+    btn_y_positive.grid(row=1, column=0, padx=2)
+    btn_y_negative = ttk.Button(button_frame_xy, text='↑', command=lambda: move_by("Y", -10), width=3)
+    btn_y_negative.grid(row=1, column=1, padx=2)
 
     # Steuerung für den roten Kreis
     frame_circle = ttk.Frame(frame_xy)
@@ -250,10 +250,10 @@ def create_xy_frame(_canvas_frame):
     btn_circle_x_negative.grid(row=1, column=0, padx=2)
     btn_circle_x_positive = ttk.Button(frame_circle, text='→', command=lambda: adjust_circle_position(10,0), width=3)
     btn_circle_x_positive.grid(row=1, column=1, padx=2)
-    btn_circle_y_negative = ttk.Button(frame_circle, text='↓', command=lambda: adjust_circle_position(0,10), width=3)
-    btn_circle_y_negative.grid(row=2, column=0, padx=2)
-    btn_circle_y_positive = ttk.Button(frame_circle, text='↑', command=lambda: adjust_circle_position(0,-10), width=3)
-    btn_circle_y_positive.grid(row=2, column=1, padx=2)
+    btn_circle_y_positive = ttk.Button(frame_circle, text='↓', command=lambda: adjust_circle_position(0,10), width=3)
+    btn_circle_y_positive.grid(row=2, column=0, padx=2)
+    btn_circle_y_negative = ttk.Button(frame_circle, text='↑', command=lambda: adjust_circle_position(0,-10), width=3)
+    btn_circle_y_negative.grid(row=2, column=1, padx=2)
     return _canvas_xy
 
 def create_canvas_frame(_root):
