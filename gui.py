@@ -7,25 +7,17 @@ from pelvi.arduino import Arduino
 arduino_port = 'COM7'  # Passen Sie den Port an
 arduino_baudrate = 115200
 
-# Maximale Achsenpositionen
+# TODO: replace it with values from db, Maximale Achsenpositionen
 X_MAX_POS = 300.0
 Y_MAX_POS = 470.0
 Z_MAX_POS = 290.0
 E0_MAX_POS = 180.0
 E1_MAX_POS = 180.0
 
-# Aktuelle Positionen
-current_x = 0
-current_y = 0
-current_z = 0
-current_e0 = 0
-current_e1 = 0
-
 # IDs der Punkte auf den Canvas
 point_xy = None
 point_ze0 = None
 point_e1 = None
-
 
 # Prüfen, ob Pillow installiert ist
 try:
@@ -33,10 +25,6 @@ try:
 except ImportError:
     print("Pillow ist nicht installiert. Bitte installieren Sie es mit 'pip install Pillow'.")
     Image = None
-
-# Funktion, um zu prüfen, ob der Arduino verbunden ist
-
-# Funktion zum Senden der Koordinaten
 
 # Funktionen zum Bewegen und Aktualisieren der Positionen
 def move_to_xy(x, y):
@@ -47,6 +35,14 @@ def move_to_xy(x, y):
     _pelvi.move_axis_to("Y", y)
     _arduino.send_coordinates('XY',_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y"))
     update_point_xy()
+
+def click_canvas_xy(event):
+    x_mm = event.x / scale_x
+    y_mm = event.y / scale_y
+    if is_inside_circle(x_mm, y_mm):
+        print("Klick innerhalb des roten Kreises. Keine Aktion.")
+        return
+    move_to_xy(x_mm, y_mm)
 
 def update_point_xy():
     global point_xy
@@ -68,6 +64,11 @@ def move_to_ze0(z, e0):
     _arduino.send_coordinates('ZE0',_pelvi.get_axis_value("Z"), _pelvi.get_axis_value("E0"))
     update_point_ze0()
 
+def click_canvas_ze0(event):
+    z_mm = event.x / scale_z
+    e0_mm = event.y / scale_e0
+    move_to_ze0(z_mm, e0_mm)
+
 def update_point_ze0():
     global point_ze0
     z_pixel = _pelvi.get_axis_value("Z") * scale_z
@@ -77,10 +78,13 @@ def update_point_ze0():
     point_ze0 = canvas_ze0.create_oval(z_pixel - 5, e0_pixel -5, z_pixel +5, e0_pixel +5, fill='blue')
 
 def move_to_e1(e1):
-    global current_e1
     _pelvi.move_axis_to("E1", e1)
     _arduino.send_coordinates('E1', _pelvi.get_axis_value("E1"))
     update_point_e1()
+
+def click_canvas_e1(event):
+    e1_mm = event.y / scale_e1
+    move_to_e1(e1_mm)
 
 def update_point_e1():
     global point_e1
@@ -104,8 +108,10 @@ def move_circle_y_negative():
 
 def adjust_circle_position(dx=0, dy=0):
     global circle_center_x_mm, circle_center_y_mm
-    circle_center_x_mm = max(0, min(X_MAX_POS, circle_center_x_mm + dx))
-    circle_center_y_mm = max(0, min(Y_MAX_POS, circle_center_y_mm + dy))
+    x_max_pos = 300
+    y_max_pos = 470
+    circle_center_x_mm = max(0, min(x_max_pos, circle_center_x_mm + dx))
+    circle_center_y_mm = max(0, min(y_max_pos, circle_center_y_mm + dy))
     update_red_circle()
 
 def update_red_circle():
@@ -226,14 +232,6 @@ if __name__ == '__main__':
     canvas_xy.create_line(0, 0, 0, canvas_height_xy, fill="black")  # Y-Achse
     canvas_xy.create_line(0, 0, canvas_width_xy, 0, fill="black")  # X-Achse
 
-    def click_canvas_xy(event):
-        x_mm = event.x / scale_x
-        y_mm = event.y / scale_y
-        if is_inside_circle(x_mm, y_mm):
-            print("Klick innerhalb des roten Kreises. Keine Aktion.")
-            return
-        move_to_xy(x_mm, y_mm)
-
     canvas_xy.bind("<Button-1>", click_canvas_xy)
 
     button_frame_xy = ttk.Frame(frame_xy)
@@ -292,11 +290,6 @@ if __name__ == '__main__':
     canvas_ze0.create_line(0, 0, 0, canvas_height_ze0, fill="black")  # E0-Achse
     canvas_ze0.create_line(0, 0, canvas_width_ze0, 0, fill="black")  # Z-Achse
 
-    def click_canvas_ze0(event):
-        z_mm = event.x / scale_z
-        e0_mm = event.y / scale_e0
-        move_to_ze0(z_mm, e0_mm)
-
     canvas_ze0.bind("<Button-1>", click_canvas_ze0)
 
     button_frame_ze0 = ttk.Frame(frame_ze0)
@@ -334,10 +327,6 @@ if __name__ == '__main__':
         print("Pillow nicht installiert. Kein Hintergrundbild für E1.")
 
     canvas_e1.create_line(50, 0, 50, canvas_height_e1, fill="black")  # E1-Achse
-
-    def click_canvas_e1(event):
-        e1_mm = event.y / scale_e1
-        move_to_e1(e1_mm)
 
     canvas_e1.bind("<Button-1>", click_canvas_e1)
 
