@@ -29,8 +29,8 @@ def move_to_xy(x, y):
     update_point_xy()
 
 def click_canvas_xy(event):
-    x_mm = int(event.x / scale_x)
-    y_mm = int(event.y / scale_y)
+    x_mm = event.x
+    y_mm = event.y
     if is_inside_circle(x_mm, y_mm):
         print("Klick innerhalb des roten Kreises. Keine Aktion.")
         return
@@ -38,8 +38,8 @@ def click_canvas_xy(event):
 
 def update_point_xy():
     global point_xy
-    x_pixel = _pelvi.get_axis_value("X")* scale_x
-    y_pixel = _pelvi.get_axis_value("Y") * scale_y
+    x_pixel = _pelvi.get_axis_value("X")
+    y_pixel = _pelvi.get_axis_value("Y")
     if point_xy:
         canvas_xy.delete(point_xy)
     point_xy = canvas_xy.create_oval(x_pixel - 5, y_pixel -5, x_pixel +5, y_pixel +5, fill='blue')
@@ -57,14 +57,14 @@ def move_to_ze0(z, e0):
     update_point_ze0()
 
 def click_canvas_ze0(event):
-    z_mm = int(event.x / scale_z)
-    e0_mm = int(event.y / scale_e0)
+    z_mm = event.x
+    e0_mm = event.y
     move_to_ze0(z_mm, e0_mm)
 
 def update_point_ze0():
     global point_ze0
-    z_pixel = _pelvi.get_axis_value("Z") * scale_z
-    e0_pixel = _pelvi.get_axis_value("E0") * scale_e0
+    z_pixel = _pelvi.get_axis_value("Z")
+    e0_pixel = _pelvi.get_axis_value("E0")
     if point_ze0:
         canvas_ze0.delete(point_ze0)
     point_ze0 = canvas_ze0.create_oval(z_pixel - 5, e0_pixel -5, z_pixel +5, e0_pixel +5, fill='blue')
@@ -75,12 +75,12 @@ def move_to_e1(e1):
     update_point_e1()
 
 def click_canvas_e1(event):
-    e1_mm = int(event.y / scale_e1)
+    e1_mm = event.y
     move_to_e1(e1_mm)
 
 def update_point_e1():
     global point_e1
-    e1_pixel = _pelvi.get_axis_value("E1") * scale_e1
+    e1_pixel = _pelvi.get_axis_value("E1")
     if point_e1:
         canvas_e1.delete(point_e1)
     point_e1 = canvas_e1.create_oval(45, e1_pixel -5, 55, e1_pixel +5, fill='blue')
@@ -94,8 +94,8 @@ def adjust_circle_position(dx=0, dy=0):
 def update_red_circle():
     global circle_center_x_px, circle_center_y_px, circle_radius_px
 
-    circle_center_x_px = circle_center_x_mm * scale_x
-    circle_center_y_px = circle_center_y_mm * scale_y
+    circle_center_x_px = circle_center_x_mm
+    circle_center_y_px = circle_center_y_mm
 
     canvas_xy.delete('red_circle')
 
@@ -282,24 +282,12 @@ if __name__ == '__main__':
     style.theme_use('clam')
 
     # Größe des Koordinatensystems festlegen
-    canvas_width_xy = 300
-    canvas_height_xy = 470
-
-    scale_x = canvas_width_xy / _pelvi.get_axis_range("X")
-    scale_y = canvas_height_xy / _pelvi.get_axis_range("Y")
-
-    # Für ZE0 Canvas
-    canvas_width_ze0 = 290
-    canvas_height_ze0 = 180
-
-    scale_z = canvas_width_ze0 / _pelvi.get_axis_range("Z")
-    scale_e0 = canvas_height_ze0 / _pelvi.get_axis_range("E0")
-
-    # Für E1 Canvas
+    canvas_width_xy = _pelvi.get_axis_range("X")
+    canvas_height_xy = _pelvi.get_axis_range("Y")
+    canvas_width_ze0 = _pelvi.get_axis_range("Z")
+    canvas_height_ze0 = _pelvi.get_axis_range("E0")
     canvas_width_e1 = 100
     canvas_height_e1 = _pelvi.get_axis_range("E1")
-
-    scale_e1 = canvas_height_e1 / _pelvi.get_axis_range("E1")
 
     # Roter Kreis im XY-Feld
     circle_center_x_mm = 200.0
@@ -307,9 +295,9 @@ if __name__ == '__main__':
     circle_radius_mm = 60.0  # Durchmesser 120 mm, also Radius 60 mm
 
     # Berechnung der Pixelkoordinaten des roten Kreises
-    circle_center_x_px = circle_center_x_mm * scale_x
-    circle_center_y_px = circle_center_y_mm * scale_y
-    circle_radius_px = circle_radius_mm * scale_x  # Annahme: scale_x und scale_y sind gleich
+    circle_center_x_px = circle_center_x_mm
+    circle_center_y_px = circle_center_y_mm
+    circle_radius_px = circle_radius_mm
 
     # Frame für die Canvas und Buttons
     canvas_frame = ttk.Frame(root)
