@@ -87,23 +87,21 @@ def update_point_e1():
 
 def adjust_circle_position(dx=0, dy=0):
     global circle_center_x_mm, circle_center_y_mm
+
     circle_center_x_mm = max(0, min(_pelvi.get_axis_range("X"), circle_center_x_mm + dx))
     circle_center_y_mm = max(0, min(_pelvi.get_axis_value("Y"), circle_center_y_mm + dy))
     update_red_circle()
 
 def update_red_circle():
-    global circle_center_x_px, circle_center_y_px, circle_radius_px
-
-    circle_center_x_px = circle_center_x_mm
-    circle_center_y_px = circle_center_y_mm
+    global circle_center_x_mm, circle_center_y_mm, circle_radius_mm
 
     canvas_xy.delete('red_circle')
 
     canvas_xy.create_oval(
-        circle_center_x_px - circle_radius_px,
-        circle_center_y_px - circle_radius_px,
-        circle_center_x_px + circle_radius_px,
-        circle_center_y_px + circle_radius_px,
+        circle_center_x_mm - circle_radius_mm,
+        circle_center_y_mm - circle_radius_mm,
+        circle_center_x_mm + circle_radius_mm,
+        circle_center_y_mm + circle_radius_mm,
         fill='red',
         outline='',
         tags='red_circle'
@@ -146,13 +144,11 @@ def create_save_button_gui():
     btn_save = ttk.Button(root, text="Save", command=save_data)
     btn_save.pack(pady=10)
 
-def create_e1_frame():
-    global canvas_e1, button_frame_e1
-
-    frame_e1 = ttk.Frame(canvas_frame)
+def create_e1_frame(_canvas_frame):
+    frame_e1 = ttk.Frame(_canvas_frame)
     frame_e1.grid(row=0, column=2, padx=10)
-    canvas_e1 = tk.Canvas(frame_e1, width=canvas_width_e1, height=canvas_height_e1)
-    canvas_e1.pack()
+    _canvas_e1 = tk.Canvas(frame_e1, width=canvas_width_e1, height=canvas_height_e1)
+    _canvas_e1.pack()
 
     # Hintergrundbild für E1
     if Image:
@@ -160,13 +156,13 @@ def create_e1_frame():
             img_e1 = Image.open('background_e1.png')
             img_e1 = img_e1.resize((canvas_width_e1, canvas_height_e1))
             bg_e1 = ImageTk.PhotoImage(img_e1)
-            canvas_e1.create_image(0, 0, image=bg_e1, anchor='nw')
+            _canvas_e1.create_image(0, 0, image=bg_e1, anchor='nw')
         except:
             print("Konnte Hintergrundbild für E1 nicht laden.")
     else:
         print("Pillow nicht installiert. Kein Hintergrundbild für E1.")
-    canvas_e1.create_line(50, 0, 50, canvas_height_e1, fill="black")  # E1-Achse
-    canvas_e1.bind("<Button-1>", click_canvas_e1)
+    _canvas_e1.create_line(50, 0, 50, canvas_height_e1, fill="black")  # E1-Achse
+    _canvas_e1.bind("<Button-1>", click_canvas_e1)
     button_frame_e1 = ttk.Frame(frame_e1)
     button_frame_e1.pack(pady=5)
     btn_e1_negative = ttk.Button(button_frame_e1, text='↓', command=lambda: move_by("E1", 10), width=3)
@@ -174,15 +170,14 @@ def create_e1_frame():
 
     btn_e1_positive = ttk.Button(button_frame_e1, text='↑', command=lambda: move_by("E1", -10), width=3)
     btn_e1_positive.pack()
+    return _canvas_e1
 
 
-def create_ze0_frame():
-    global canvas_ze0
-
-    frame_ze0 = ttk.Frame(canvas_frame)
+def create_ze0_frame(_canvas_frame):
+    frame_ze0 = ttk.Frame(_canvas_frame)
     frame_ze0.grid(row=0, column=1, padx=10)
-    canvas_ze0 = tk.Canvas(frame_ze0, width=canvas_width_ze0, height=canvas_height_ze0)
-    canvas_ze0.pack()
+    _canvas_ze0 = tk.Canvas(frame_ze0, width=canvas_width_ze0, height=canvas_height_ze0)
+    _canvas_ze0.pack()
 
     # Hintergrundbild für ZE0
     if Image:
@@ -190,14 +185,14 @@ def create_ze0_frame():
             img_ze0 = Image.open('background_ze0.png')
             img_ze0 = img_ze0.resize((canvas_width_ze0, canvas_height_ze0))
             bg_ze0 = ImageTk.PhotoImage(img_ze0)
-            canvas_ze0.create_image(0, 0, image=bg_ze0, anchor='nw')
+            _canvas_ze0.create_image(0, 0, image=bg_ze0, anchor='nw')
         except:
             print("Konnte Hintergrundbild für ZE0 nicht laden.")
     else:
         print("Pillow nicht installiert. Kein Hintergrundbild für ZE0.")
-    canvas_ze0.create_line(0, 0, 0, canvas_height_ze0, fill="black")  # E0-Achse
-    canvas_ze0.create_line(0, 0, canvas_width_ze0, 0, fill="black")  # Z-Achse
-    canvas_ze0.bind("<Button-1>", click_canvas_ze0)
+    _canvas_ze0.create_line(0, 0, 0, canvas_height_ze0, fill="black")  # E0-Achse
+    _canvas_ze0.create_line(0, 0, canvas_width_ze0, 0, fill="black")  # Z-Achse
+    _canvas_ze0.bind("<Button-1>", click_canvas_ze0)
     button_frame_ze0 = ttk.Frame(frame_ze0)
     button_frame_ze0.pack(pady=5)
     btn_z_negative = ttk.Button(button_frame_ze0, text='←', command=lambda: move_by("Z", -10), width=3)
@@ -208,15 +203,14 @@ def create_ze0_frame():
     btn_e0_negative.grid(row=1, column=0, padx=2)
     btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=lambda: move_by("E0", -10), width=3)
     btn_e0_positive.grid(row=1, column=1, padx=2)
+    return _canvas_ze0
 
 
-def create_xy_frame():
-    global canvas_xy
-
-    frame_xy = ttk.Frame(canvas_frame)
+def create_xy_frame(_canvas_frame):
+    frame_xy = ttk.Frame(_canvas_frame)
     frame_xy.grid(row=0, column=0, padx=10)
-    canvas_xy = tk.Canvas(frame_xy, width=canvas_width_xy, height=canvas_height_xy)
-    canvas_xy.pack()
+    _canvas_xy = tk.Canvas(frame_xy, width=canvas_width_xy, height=canvas_height_xy)
+    _canvas_xy.pack()
 
     # Hintergrundbild für XY
     if Image:
@@ -224,25 +218,25 @@ def create_xy_frame():
             img_xy = Image.open('background_xy.png')
             img_xy = img_xy.resize((canvas_width_xy, canvas_height_xy))
             bg_xy = ImageTk.PhotoImage(img_xy)
-            canvas_xy.create_image(0, 0, image=bg_xy, anchor='nw')
+            _canvas_xy.create_image(0, 0, image=bg_xy, anchor='nw')
         except:
             print("Konnte Hintergrundbild für XY nicht laden.")
     else:
         print("Pillow nicht installiert. Kein Hintergrundbild für XY.")
 
     # Zeichnen des roten Kreises
-    canvas_xy.create_oval(
-        circle_center_x_px - circle_radius_px,
-        circle_center_y_px - circle_radius_px,
-        circle_center_x_px + circle_radius_px,
-        circle_center_y_px + circle_radius_px,
+    _canvas_xy.create_oval(
+        circle_center_x_mm - circle_radius_mm,
+        circle_center_y_mm - circle_radius_mm,
+        circle_center_x_mm + circle_radius_mm,
+        circle_center_y_mm + circle_radius_mm,
         fill='red',
         outline='',
         tags='red_circle'  # Hinzugefügtes Tag für späteres Löschen
     )
-    canvas_xy.create_line(0, 0, 0, canvas_height_xy, fill="black")  # Y-Achse
-    canvas_xy.create_line(0, 0, canvas_width_xy, 0, fill="black")  # X-Achse
-    canvas_xy.bind("<Button-1>", click_canvas_xy)
+    _canvas_xy.create_line(0, 0, 0, canvas_height_xy, fill="black")  # Y-Achse
+    _canvas_xy.create_line(0, 0, canvas_width_xy, 0, fill="black")  # X-Achse
+    _canvas_xy.bind("<Button-1>", click_canvas_xy)
     button_frame_xy = ttk.Frame(frame_xy)
     button_frame_xy.pack(pady=5)
     btn_x_negative = ttk.Button(button_frame_xy, text='←', command=lambda: move_by("X", -10), width=3)
@@ -267,21 +261,12 @@ def create_xy_frame():
     btn_circle_y_negative.grid(row=2, column=0, padx=2)
     btn_circle_y_positive = ttk.Button(frame_circle, text='↑', command=lambda: adjust_circle_position(0,-10), width=3)
     btn_circle_y_positive.grid(row=2, column=1, padx=2)
+    return _canvas_xy
 
 
-if __name__ == '__main__':
-    _pelvi = Pelvi()
-    _arduino = Arduino(arduino_port, arduino_baudrate)
+def calculate_sizes():
+    global canvas_width_xy, canvas_height_xy, canvas_width_ze0, canvas_height_ze0, canvas_width_e1, canvas_height_e1, circle_center_x_mm, circle_center_y_mm, circle_radius_mm
 
-    # Hauptfenster erstellen
-    root = tk.Tk()
-    root.title("Koordinatensteuerung")
-
-    # Style für ttk Widgets festlegen
-    style = ttk.Style()
-    style.theme_use('clam')
-
-    # Größe des Koordinatensystems festlegen
     canvas_width_xy = _pelvi.get_axis_range("X")
     canvas_height_xy = _pelvi.get_axis_range("Y")
     canvas_width_ze0 = _pelvi.get_axis_range("Z")
@@ -289,23 +274,34 @@ if __name__ == '__main__':
     canvas_width_e1 = 100
     canvas_height_e1 = _pelvi.get_axis_range("E1")
 
-    # Roter Kreis im XY-Feld
     circle_center_x_mm = 200.0
     circle_center_y_mm = 120.0
     circle_radius_mm = 60.0  # Durchmesser 120 mm, also Radius 60 mm
 
-    # Berechnung der Pixelkoordinaten des roten Kreises
-    circle_center_x_px = circle_center_x_mm
-    circle_center_y_px = circle_center_y_mm
-    circle_radius_px = circle_radius_mm
+def create_canvas_frame():
+    _canvas_frame = ttk.Frame(root)
+    _canvas_frame.pack(side=tk.TOP, padx=10, pady=10)
+    return _canvas_frame
 
-    # Frame für die Canvas und Buttons
-    canvas_frame = ttk.Frame(root)
-    canvas_frame.pack(side=tk.TOP, padx=10, pady=10)
+def create_main_window():
+    _root = tk.Tk()
+    _root.title("Koordinatensteuerung")
+    style = ttk.Style()
+    style.theme_use('clam')
+    return _root
 
-    create_xy_frame()
-    create_ze0_frame()
-    create_e1_frame()
+
+if __name__ == '__main__':
+    _pelvi = Pelvi()
+    _arduino = Arduino(arduino_port, arduino_baudrate)
+
+    root = create_main_window()
+    canvas_frame = create_canvas_frame()
+
+    calculate_sizes()
+    canvas_xy = create_xy_frame(canvas_frame)
+    canvas_ze0 = create_ze0_frame(canvas_frame)
+    canvas_e1 = create_e1_frame(canvas_frame)
     create_dc_motor_gui()
     create_save_button_gui()
 
