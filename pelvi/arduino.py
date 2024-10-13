@@ -32,3 +32,27 @@ class Arduino:
 
     def write(self, data):
         self.__serial.write(data)
+
+    def send_coordinates(self, axis, *args):
+        if self.__serial:
+            if axis == 'XY':
+                x_mm, y_mm = args
+                command = f"XY {x_mm},{y_mm}\n"
+                self.__serial.write(command.encode())
+                print(f"Gesendet: {command.strip()}")
+            elif axis == 'ZE0':
+                z_mm, e0_mm = args
+                command = f"ZE0 {z_mm},{e0_mm}\n"
+                self.__serial.write(command.encode())
+                print(f"Gesendet: {command.strip()}")
+            elif axis == 'E1':
+                e1_mm = args[0]
+                command = f"E1 {e1_mm}\n"
+                self.__serial.write(command.encode())
+                print(f"Gesendet: {command.strip()}")
+            elif axis == 'MOTOR':
+                command = f"{args[0]}\n"
+                self.__serial.write(command.encode())
+                print(f"Gesendet: {command.strip()}")
+        else:
+            print("Arduino ist nicht verbunden.")
