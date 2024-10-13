@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
-import serial
-import time
+from pelvi.pelvi import Pelvi
+from pelvi.arduino import Arduino
 
 # Konfiguration
 arduino_port = 'COM7'  # Passen Sie den Port an
@@ -35,13 +35,6 @@ except ImportError:
     Image = None
 
 # Funktion, um zu prüfen, ob der Arduino verbunden ist
-def is_arduino_connected(port, baudrate=115200):
-    try:
-        ser = serial.Serial(port, baudrate)
-        ser.close()
-        return True
-    except:
-        return False
 
 # Funktion zum Senden der Koordinaten
 def send_coordinates(axis, *args):
@@ -203,23 +196,8 @@ def motor_stop():
     print("Motor gestoppt.")
 
 if __name__ == '__main__':
-    # Konfiguration der seriellen Verbindung
-    arduino_connected = is_arduino_connected(arduino_port, arduino_baudrate)
-
-    if arduino_connected:
-        arduino = serial.Serial(arduino_port, arduino_baudrate)
-        time.sleep(2)  # Warten, bis die Verbindung hergestellt ist
-    else:
-        # Mock-Serial-Klasse
-        class MockSerial:
-            def write(self, data):
-                print(f"Gesendet (Mock): {data.decode().strip()}")
-
-            def close(self):
-                print("Mock-Serial-Verbindung geschlossen.")
-
-        arduino = MockSerial()
-        print("Arduino nicht verbunden. Verwende Mock-Serial-Klasse.")
+    pelvi = Pelvi()
+    arduino = Arduino(arduino_port, arduino_baudrate)
 
     # Hauptfenster erstellen
     root = tk.Tk()
@@ -438,7 +416,3 @@ if __name__ == '__main__':
 
     # Hauptschleife starten
     root.mainloop()
-
-    # Schließe die serielle Verbindung, wenn das Fenster geschlossen wird
-    if arduino_connected:
-        arduino.close()
