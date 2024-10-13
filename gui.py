@@ -19,7 +19,6 @@ except ImportError:
     print("Pillow ist nicht installiert. Bitte installieren Sie es mit 'pip install Pillow'.")
     Image = None
 
-# Funktionen zum Bewegen und Aktualisieren der Positionen
 def move_to_xy(x, y):
     if is_inside_circle(x, y):
         print("Bewegung in den roten Kreis ist nicht erlaubt.")
@@ -110,14 +109,14 @@ def update_red_circle():
         tags='red_circle'
     )
 
-def move_by(pelvi, axis, value):
-    pelvi.move_axis_by(axis, value)
+def move_by(axis, value):
+    _pelvi.move_axis_by(axis, value)
     if axis == 'X' or axis == 'Y':
-        move_to_xy(pelvi.get_axis_value("X"), pelvi.get_axis_value("Y"))
+        move_to_xy(_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y"))
     elif axis == 'Z' or axis == 'E0':
-        move_to_ze0(pelvi.get_axis_value("Z"), pelvi.get_axis_value("E0"))
+        move_to_ze0(_pelvi.get_axis_value("Z"), _pelvi.get_axis_value("E0"))
     elif axis == 'E1':
-        move_to_e1(pelvi.get_axis_value("E1"))
+        move_to_e1(_pelvi.get_axis_value("E1"))
 
 def motor_command(command):
     _arduino.send_coordinates('MOTOR', command)
@@ -166,10 +165,10 @@ def create_e1_frame():
     canvas_e1.bind("<Button-1>", click_canvas_e1)
     button_frame_e1 = ttk.Frame(frame_e1)
     button_frame_e1.pack(pady=5)
-    btn_e1_negative = ttk.Button(button_frame_e1, text='↓', command=lambda: move_by(_pelvi, "E1", 10), width=3)
+    btn_e1_negative = ttk.Button(button_frame_e1, text='↓', command=lambda: move_by("E1", 10), width=3)
     btn_e1_negative.pack()
 
-    btn_e1_positive = ttk.Button(button_frame_e1, text='↑', command=lambda: move_by(_pelvi, "E1", -10), width=3)
+    btn_e1_positive = ttk.Button(button_frame_e1, text='↑', command=lambda: move_by("E1", -10), width=3)
     btn_e1_positive.pack()
 
 
@@ -197,13 +196,13 @@ def create_ze0_frame():
     canvas_ze0.bind("<Button-1>", click_canvas_ze0)
     button_frame_ze0 = ttk.Frame(frame_ze0)
     button_frame_ze0.pack(pady=5)
-    btn_z_negative = ttk.Button(button_frame_ze0, text='←', command=lambda: move_by(_pelvi, "Z", -10), width=3)
+    btn_z_negative = ttk.Button(button_frame_ze0, text='←', command=lambda: move_by("Z", -10), width=3)
     btn_z_negative.grid(row=0, column=0, padx=2)
-    btn_z_positive = ttk.Button(button_frame_ze0, text='→', command=lambda: move_by(_pelvi, "Z", 10), width=3)
+    btn_z_positive = ttk.Button(button_frame_ze0, text='→', command=lambda: move_by("Z", 10), width=3)
     btn_z_positive.grid(row=0, column=1, padx=2)
-    btn_e0_negative = ttk.Button(button_frame_ze0, text='↓', command=lambda: move_by(_pelvi, "E0", 10), width=3)
+    btn_e0_negative = ttk.Button(button_frame_ze0, text='↓', command=lambda: move_by("E0", 10), width=3)
     btn_e0_negative.grid(row=1, column=0, padx=2)
-    btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=lambda: move_by(_pelvi, "E0", -10), width=3)
+    btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=lambda: move_by("E0", -10), width=3)
     btn_e0_positive.grid(row=1, column=1, padx=2)
 
 
@@ -242,13 +241,13 @@ def create_xy_frame():
     canvas_xy.bind("<Button-1>", click_canvas_xy)
     button_frame_xy = ttk.Frame(frame_xy)
     button_frame_xy.pack(pady=5)
-    btn_x_negative = ttk.Button(button_frame_xy, text='←', command=lambda: move_by(_pelvi, "X", -10), width=3)
+    btn_x_negative = ttk.Button(button_frame_xy, text='←', command=lambda: move_by("X", -10), width=3)
     btn_x_negative.grid(row=0, column=0, padx=2)
-    btn_x_positive = ttk.Button(button_frame_xy, text='→', command=lambda: move_by(_pelvi, "X", 10), width=3)
+    btn_x_positive = ttk.Button(button_frame_xy, text='→', command=lambda: move_by("X", 10), width=3)
     btn_x_positive.grid(row=0, column=1, padx=2)
-    btn_y_negative = ttk.Button(button_frame_xy, text='↓', command=lambda: move_by(_pelvi, "Y", 10), width=3)
+    btn_y_negative = ttk.Button(button_frame_xy, text='↓', command=lambda: move_by("Y", 10), width=3)
     btn_y_negative.grid(row=1, column=0, padx=2)
-    btn_y_positive = ttk.Button(button_frame_xy, text='↑', command=lambda: move_by(_pelvi, "Y", -10), width=3)
+    btn_y_positive = ttk.Button(button_frame_xy, text='↑', command=lambda: move_by("Y", -10), width=3)
     btn_y_positive.grid(row=1, column=1, padx=2)
 
     # Steuerung für den roten Kreis
