@@ -123,7 +123,7 @@ class Pelvi:
             print("Blockvalue Axis:", blocked.axis, "Min Value:", blocked.minvalue, "Max Value", blocked.maxvalue)
 
     def get_axis_range(self, axis):
-        minimum, maximum = self.__get_range("X")
+        minimum, maximum = self.__get_range(axis)
         return maximum - minimum
 
 
