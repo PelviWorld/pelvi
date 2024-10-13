@@ -356,5 +356,12 @@ if __name__ == '__main__':
     btn_save = ttk.Button(root, text="Save", command=save_data)
     btn_save.pack(pady=10)
 
+    _arduino.send_coordinates('XY',_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y"))
+    _arduino.send_coordinates('ZE0',_pelvi.get_axis_value("Z"), _pelvi.get_axis_value("E0"))
+    _arduino.send_coordinates('E1', _pelvi.get_axis_value("E1"))
+    update_point_xy()
+    update_point_ze0()
+    update_point_e1()
+
     # Hauptschleife starten
     root.mainloop()
