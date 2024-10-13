@@ -2,8 +2,10 @@ import tkinter as tk
 from tkinter import ttk
 import serial
 import time
-import sys
-import os
+
+# Konfiguration
+arduino_port = 'COM7'  # Passen Sie den Port an
+arduino_baudrate = 115200
 
 # Prüfen, ob Pillow installiert ist
 try:
@@ -13,32 +15,13 @@ except ImportError:
     Image = None
 
 # Funktion, um zu prüfen, ob der Arduino verbunden ist
-def is_arduino_connected(port):
+def is_arduino_connected(port, baudrate=115200):
     try:
-        ser = serial.Serial('COM7', 115200)
+        ser = serial.Serial(port, baudrate)
         ser.close()
         return True
     except:
         return False
-
-# Konfiguration der seriellen Verbindung
-arduino_port = 'COM7'  # Passen Sie den Port an
-arduino_connected = is_arduino_connected(arduino_port)
-
-if arduino_connected:
-    arduino = serial.Serial(arduino_port, 115200)
-    time.sleep(2)  # Warten, bis die Verbindung hergestellt ist
-else:
-    # Mock-Serial-Klasse
-    class MockSerial:
-        def write(self, data):
-            print(f"Gesendet (Mock): {data.decode().strip()}")
-
-        def close(self):
-            print("Mock-Serial-Verbindung geschlossen.")
-
-    arduino = MockSerial()
-    print("Arduino nicht verbunden. Verwende Mock-Serial-Klasse.")
 
 # Maximale Achsenpositionen
 X_MAX_POS = 300.0
@@ -58,44 +41,6 @@ current_e1 = 0
 point_xy = None
 point_ze0 = None
 point_e1 = None
-
-# Hauptfenster erstellen
-root = tk.Tk()
-root.title("Koordinatensteuerung")
-
-# Style für ttk Widgets festlegen
-style = ttk.Style()
-style.theme_use('clam')
-
-# Größe des Koordinatensystems festlegen
-canvas_width_xy = 300
-canvas_height_xy = 470
-
-scale_x = canvas_width_xy / X_MAX_POS
-scale_y = canvas_height_xy / Y_MAX_POS
-
-# Für ZE0 Canvas
-canvas_width_ze0 = 290
-canvas_height_ze0 = 180
-
-scale_z = canvas_width_ze0 / Z_MAX_POS
-scale_e0 = canvas_height_ze0 / E0_MAX_POS
-
-# Für E1 Canvas
-canvas_width_e1 = 100
-canvas_height_e1 = E1_MAX_POS
-
-scale_e1 = canvas_height_e1 / E1_MAX_POS
-
-# Roter Kreis im XY-Feld
-circle_center_x_mm = 200.0
-circle_center_y_mm = 120.0
-circle_radius_mm = 60.0  # Durchmesser 120 mm, also Radius 60 mm
-
-# Berechnung der Pixelkoordinaten des roten Kreises
-circle_center_x_px = circle_center_x_mm * scale_x
-circle_center_y_px = circle_center_y_mm * scale_y
-circle_radius_px = circle_radius_mm * scale_x  # Annahme: scale_x und scale_y sind gleich
 
 # Funktion zum Senden der Koordinaten
 def send_coordinates(axis, *args):
@@ -256,186 +201,243 @@ def motor_stop():
     send_coordinates('MOTOR', 'MOTOR STOP')
     print("Motor gestoppt.")
 
-# Frame für die Canvas und Buttons
-canvas_frame = ttk.Frame(root)
-canvas_frame.pack(side=tk.TOP, padx=10, pady=10)
+if __name__ == '__main__':
+    # Konfiguration der seriellen Verbindung
+    arduino_connected = is_arduino_connected(arduino_port, arduino_baudrate)
 
-# -------------------- XY Achsen --------------------
-frame_xy = ttk.Frame(canvas_frame)
-frame_xy.grid(row=0, column=0, padx=10)
+    if arduino_connected:
+        arduino = serial.Serial(arduino_port, arduino_baudrate)
+        time.sleep(2)  # Warten, bis die Verbindung hergestellt ist
+    else:
+        # Mock-Serial-Klasse
+        class MockSerial:
+            def write(self, data):
+                print(f"Gesendet (Mock): {data.decode().strip()}")
 
-canvas_xy = tk.Canvas(frame_xy, width=canvas_width_xy, height=canvas_height_xy)
-canvas_xy.pack()
+            def close(self):
+                print("Mock-Serial-Verbindung geschlossen.")
 
-# Hintergrundbild für XY
-if Image:
-    try:
-        img_xy = Image.open('background_xy.png')
-        img_xy = img_xy.resize((canvas_width_xy, canvas_height_xy))
-        bg_xy = ImageTk.PhotoImage(img_xy)
-        canvas_xy.create_image(0, 0, image=bg_xy, anchor='nw')
-    except:
-        print("Konnte Hintergrundbild für XY nicht laden.")
-else:
-    print("Pillow nicht installiert. Kein Hintergrundbild für XY.")
+        arduino = MockSerial()
+        print("Arduino nicht verbunden. Verwende Mock-Serial-Klasse.")
 
-# Zeichnen des roten Kreises
-canvas_xy.create_oval(
-    circle_center_x_px - circle_radius_px,
-    circle_center_y_px - circle_radius_px,
-    circle_center_x_px + circle_radius_px,
-    circle_center_y_px + circle_radius_px,
-    fill='red',
-    outline='',
-    tags='red_circle'  # Hinzugefügtes Tag für späteres Löschen
-)
+    # Hauptfenster erstellen
+    root = tk.Tk()
+    root.title("Koordinatensteuerung")
 
-canvas_xy.create_line(0, 0, 0, canvas_height_xy, fill="black")  # Y-Achse
-canvas_xy.create_line(0, 0, canvas_width_xy, 0, fill="black")  # X-Achse
+    # Style für ttk Widgets festlegen
+    style = ttk.Style()
+    style.theme_use('clam')
 
-def click_canvas_xy(event):
-    x_mm = event.x / scale_x
-    y_mm = event.y / scale_y
-    if is_inside_circle(x_mm, y_mm):
-        print("Klick innerhalb des roten Kreises. Keine Aktion.")
-        return
-    move_to_xy(x_mm, y_mm)
+    # Größe des Koordinatensystems festlegen
+    canvas_width_xy = 300
+    canvas_height_xy = 470
 
-canvas_xy.bind("<Button-1>", click_canvas_xy)
+    scale_x = canvas_width_xy / X_MAX_POS
+    scale_y = canvas_height_xy / Y_MAX_POS
 
-button_frame_xy = ttk.Frame(frame_xy)
-button_frame_xy.pack(pady=5)
+    # Für ZE0 Canvas
+    canvas_width_ze0 = 290
+    canvas_height_ze0 = 180
 
-btn_x_negative = ttk.Button(button_frame_xy, text='←', command=move_x_negative, width=3)
-btn_x_negative.grid(row=0, column=0, padx=2)
+    scale_z = canvas_width_ze0 / Z_MAX_POS
+    scale_e0 = canvas_height_ze0 / E0_MAX_POS
 
-btn_x_positive = ttk.Button(button_frame_xy, text='→', command=move_x_positive, width=3)
-btn_x_positive.grid(row=0, column=1, padx=2)
+    # Für E1 Canvas
+    canvas_width_e1 = 100
+    canvas_height_e1 = E1_MAX_POS
 
-btn_y_negative = ttk.Button(button_frame_xy, text='↓', command=move_y_negative, width=3)
-btn_y_negative.grid(row=1, column=0, padx=2)
+    scale_e1 = canvas_height_e1 / E1_MAX_POS
 
-btn_y_positive = ttk.Button(button_frame_xy, text='↑', command=move_y_positive, width=3)
-btn_y_positive.grid(row=1, column=1, padx=2)
+    # Roter Kreis im XY-Feld
+    circle_center_x_mm = 200.0
+    circle_center_y_mm = 120.0
+    circle_radius_mm = 60.0  # Durchmesser 120 mm, also Radius 60 mm
 
-# Steuerung für den roten Kreis
-frame_circle = ttk.Frame(frame_xy)
-frame_circle.pack(pady=5)
+    # Berechnung der Pixelkoordinaten des roten Kreises
+    circle_center_x_px = circle_center_x_mm * scale_x
+    circle_center_y_px = circle_center_y_mm * scale_y
+    circle_radius_px = circle_radius_mm * scale_x  # Annahme: scale_x und scale_y sind gleich
 
-label_circle = ttk.Label(frame_circle, text="Roter Punkt bewegen")
-label_circle.grid(row=0, column=0, columnspan=2)
+    # Frame für die Canvas und Buttons
+    canvas_frame = ttk.Frame(root)
+    canvas_frame.pack(side=tk.TOP, padx=10, pady=10)
 
-btn_circle_x_negative = ttk.Button(frame_circle, text='←', command=move_circle_x_negative, width=3)
-btn_circle_x_negative.grid(row=1, column=0, padx=2)
+    # -------------------- XY Achsen --------------------
+    frame_xy = ttk.Frame(canvas_frame)
+    frame_xy.grid(row=0, column=0, padx=10)
 
-btn_circle_x_positive = ttk.Button(frame_circle, text='→', command=move_circle_x_positive, width=3)
-btn_circle_x_positive.grid(row=1, column=1, padx=2)
+    canvas_xy = tk.Canvas(frame_xy, width=canvas_width_xy, height=canvas_height_xy)
+    canvas_xy.pack()
 
-btn_circle_y_negative = ttk.Button(frame_circle, text='↓', command=move_circle_y_negative, width=3)
-btn_circle_y_negative.grid(row=2, column=0, padx=2)
+    # Hintergrundbild für XY
+    if Image:
+        try:
+            img_xy = Image.open('background_xy.png')
+            img_xy = img_xy.resize((canvas_width_xy, canvas_height_xy))
+            bg_xy = ImageTk.PhotoImage(img_xy)
+            canvas_xy.create_image(0, 0, image=bg_xy, anchor='nw')
+        except:
+            print("Konnte Hintergrundbild für XY nicht laden.")
+    else:
+        print("Pillow nicht installiert. Kein Hintergrundbild für XY.")
 
-btn_circle_y_positive = ttk.Button(frame_circle, text='↑', command=move_circle_y_positive, width=3)
-btn_circle_y_positive.grid(row=2, column=1, padx=2)
+    # Zeichnen des roten Kreises
+    canvas_xy.create_oval(
+        circle_center_x_px - circle_radius_px,
+        circle_center_y_px - circle_radius_px,
+        circle_center_x_px + circle_radius_px,
+        circle_center_y_px + circle_radius_px,
+        fill='red',
+        outline='',
+        tags='red_circle'  # Hinzugefügtes Tag für späteres Löschen
+    )
 
-# -------------------- ZE0 Achsen --------------------
-frame_ze0 = ttk.Frame(canvas_frame)
-frame_ze0.grid(row=0, column=1, padx=10)
+    canvas_xy.create_line(0, 0, 0, canvas_height_xy, fill="black")  # Y-Achse
+    canvas_xy.create_line(0, 0, canvas_width_xy, 0, fill="black")  # X-Achse
 
-canvas_ze0 = tk.Canvas(frame_ze0, width=canvas_width_ze0, height=canvas_height_ze0)
-canvas_ze0.pack()
+    def click_canvas_xy(event):
+        x_mm = event.x / scale_x
+        y_mm = event.y / scale_y
+        if is_inside_circle(x_mm, y_mm):
+            print("Klick innerhalb des roten Kreises. Keine Aktion.")
+            return
+        move_to_xy(x_mm, y_mm)
 
-# Hintergrundbild für ZE0
-if Image:
-    try:
-        img_ze0 = Image.open('background_ze0.png')
-        img_ze0 = img_ze0.resize((canvas_width_ze0, canvas_height_ze0))
-        bg_ze0 = ImageTk.PhotoImage(img_ze0)
-        canvas_ze0.create_image(0, 0, image=bg_ze0, anchor='nw')
-    except:
-        print("Konnte Hintergrundbild für ZE0 nicht laden.")
-else:
-    print("Pillow nicht installiert. Kein Hintergrundbild für ZE0.")
+    canvas_xy.bind("<Button-1>", click_canvas_xy)
 
-canvas_ze0.create_line(0, 0, 0, canvas_height_ze0, fill="black")  # E0-Achse
-canvas_ze0.create_line(0, 0, canvas_width_ze0, 0, fill="black")  # Z-Achse
+    button_frame_xy = ttk.Frame(frame_xy)
+    button_frame_xy.pack(pady=5)
 
-def click_canvas_ze0(event):
-    z_mm = event.x / scale_z
-    e0_mm = event.y / scale_e0
-    move_to_ze0(z_mm, e0_mm)
+    btn_x_negative = ttk.Button(button_frame_xy, text='←', command=move_x_negative, width=3)
+    btn_x_negative.grid(row=0, column=0, padx=2)
 
-canvas_ze0.bind("<Button-1>", click_canvas_ze0)
+    btn_x_positive = ttk.Button(button_frame_xy, text='→', command=move_x_positive, width=3)
+    btn_x_positive.grid(row=0, column=1, padx=2)
 
-button_frame_ze0 = ttk.Frame(frame_ze0)
-button_frame_ze0.pack(pady=5)
+    btn_y_negative = ttk.Button(button_frame_xy, text='↓', command=move_y_negative, width=3)
+    btn_y_negative.grid(row=1, column=0, padx=2)
 
-btn_z_negative = ttk.Button(button_frame_ze0, text='←', command=move_z_negative, width=3)
-btn_z_negative.grid(row=0, column=0, padx=2)
+    btn_y_positive = ttk.Button(button_frame_xy, text='↑', command=move_y_positive, width=3)
+    btn_y_positive.grid(row=1, column=1, padx=2)
 
-btn_z_positive = ttk.Button(button_frame_ze0, text='→', command=move_z_positive, width=3)
-btn_z_positive.grid(row=0, column=1, padx=2)
+    # Steuerung für den roten Kreis
+    frame_circle = ttk.Frame(frame_xy)
+    frame_circle.pack(pady=5)
 
-btn_e0_negative = ttk.Button(button_frame_ze0, text='↓', command=move_e0_negative, width=3)
-btn_e0_negative.grid(row=1, column=0, padx=2)
+    label_circle = ttk.Label(frame_circle, text="Roter Punkt bewegen")
+    label_circle.grid(row=0, column=0, columnspan=2)
 
-btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=move_e0_positive, width=3)
-btn_e0_positive.grid(row=1, column=1, padx=2)
+    btn_circle_x_negative = ttk.Button(frame_circle, text='←', command=move_circle_x_negative, width=3)
+    btn_circle_x_negative.grid(row=1, column=0, padx=2)
 
-# -------------------- E1 Achse --------------------
-frame_e1 = ttk.Frame(canvas_frame)
-frame_e1.grid(row=0, column=2, padx=10)
+    btn_circle_x_positive = ttk.Button(frame_circle, text='→', command=move_circle_x_positive, width=3)
+    btn_circle_x_positive.grid(row=1, column=1, padx=2)
 
-canvas_e1 = tk.Canvas(frame_e1, width=canvas_width_e1, height=canvas_height_e1)
-canvas_e1.pack()
+    btn_circle_y_negative = ttk.Button(frame_circle, text='↓', command=move_circle_y_negative, width=3)
+    btn_circle_y_negative.grid(row=2, column=0, padx=2)
 
-# Hintergrundbild für E1
-if Image:
-    try:
-        img_e1 = Image.open('background_e1.png')
-        img_e1 = img_e1.resize((canvas_width_e1, canvas_height_e1))
-        bg_e1 = ImageTk.PhotoImage(img_e1)
-        canvas_e1.create_image(0, 0, image=bg_e1, anchor='nw')
-    except:
-        print("Konnte Hintergrundbild für E1 nicht laden.")
-else:
-    print("Pillow nicht installiert. Kein Hintergrundbild für E1.")
+    btn_circle_y_positive = ttk.Button(frame_circle, text='↑', command=move_circle_y_positive, width=3)
+    btn_circle_y_positive.grid(row=2, column=1, padx=2)
 
-canvas_e1.create_line(50, 0, 50, canvas_height_e1, fill="black")  # E1-Achse
+    # -------------------- ZE0 Achsen --------------------
+    frame_ze0 = ttk.Frame(canvas_frame)
+    frame_ze0.grid(row=0, column=1, padx=10)
 
-def click_canvas_e1(event):
-    e1_mm = event.y / scale_e1
-    move_to_e1(e1_mm)
+    canvas_ze0 = tk.Canvas(frame_ze0, width=canvas_width_ze0, height=canvas_height_ze0)
+    canvas_ze0.pack()
 
-canvas_e1.bind("<Button-1>", click_canvas_e1)
+    # Hintergrundbild für ZE0
+    if Image:
+        try:
+            img_ze0 = Image.open('background_ze0.png')
+            img_ze0 = img_ze0.resize((canvas_width_ze0, canvas_height_ze0))
+            bg_ze0 = ImageTk.PhotoImage(img_ze0)
+            canvas_ze0.create_image(0, 0, image=bg_ze0, anchor='nw')
+        except:
+            print("Konnte Hintergrundbild für ZE0 nicht laden.")
+    else:
+        print("Pillow nicht installiert. Kein Hintergrundbild für ZE0.")
 
-button_frame_e1 = ttk.Frame(frame_e1)
-button_frame_e1.pack(pady=5)
+    canvas_ze0.create_line(0, 0, 0, canvas_height_ze0, fill="black")  # E0-Achse
+    canvas_ze0.create_line(0, 0, canvas_width_ze0, 0, fill="black")  # Z-Achse
 
-btn_e1_negative = ttk.Button(button_frame_e1, text='↓', command=move_e1_negative, width=3)
-btn_e1_negative.pack()
+    def click_canvas_ze0(event):
+        z_mm = event.x / scale_z
+        e0_mm = event.y / scale_e0
+        move_to_ze0(z_mm, e0_mm)
 
-btn_e1_positive = ttk.Button(button_frame_e1, text='↑', command=move_e1_positive, width=3)
-btn_e1_positive.pack()
+    canvas_ze0.bind("<Button-1>", click_canvas_ze0)
 
-# -------------------- DC-Motor-Steuerung --------------------
-frame_motor = ttk.Frame(root)
-frame_motor.pack(pady=10)
+    button_frame_ze0 = ttk.Frame(frame_ze0)
+    button_frame_ze0.pack(pady=5)
 
-label_motor = ttk.Label(frame_motor, text="DC-Motor-Steuerung")
-label_motor.pack()
+    btn_z_negative = ttk.Button(button_frame_ze0, text='←', command=move_z_negative, width=3)
+    btn_z_negative.grid(row=0, column=0, padx=2)
 
-btn_motor_forward = ttk.Button(frame_motor, text="Motor Rückwärts", command=motor_forward)
-btn_motor_forward.pack(side=tk.LEFT, padx=5)
+    btn_z_positive = ttk.Button(button_frame_ze0, text='→', command=move_z_positive, width=3)
+    btn_z_positive.grid(row=0, column=1, padx=2)
 
-btn_motor_reverse = ttk.Button(frame_motor, text="Motor Vorwärts", command=motor_reverse)
-btn_motor_reverse.pack(side=tk.LEFT, padx=5)
+    btn_e0_negative = ttk.Button(button_frame_ze0, text='↓', command=move_e0_negative, width=3)
+    btn_e0_negative.grid(row=1, column=0, padx=2)
 
-btn_motor_stop = ttk.Button(frame_motor, text="Motor Stop", command=motor_stop)
-btn_motor_stop.pack(side=tk.LEFT, padx=5)
+    btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=move_e0_positive, width=3)
+    btn_e0_positive.grid(row=1, column=1, padx=2)
 
-# Hauptschleife starten
-root.mainloop()
+    # -------------------- E1 Achse --------------------
+    frame_e1 = ttk.Frame(canvas_frame)
+    frame_e1.grid(row=0, column=2, padx=10)
 
-# Schließe die serielle Verbindung, wenn das Fenster geschlossen wird
-if arduino_connected:
-    arduino.close()
+    canvas_e1 = tk.Canvas(frame_e1, width=canvas_width_e1, height=canvas_height_e1)
+    canvas_e1.pack()
+
+    # Hintergrundbild für E1
+    if Image:
+        try:
+            img_e1 = Image.open('background_e1.png')
+            img_e1 = img_e1.resize((canvas_width_e1, canvas_height_e1))
+            bg_e1 = ImageTk.PhotoImage(img_e1)
+            canvas_e1.create_image(0, 0, image=bg_e1, anchor='nw')
+        except:
+            print("Konnte Hintergrundbild für E1 nicht laden.")
+    else:
+        print("Pillow nicht installiert. Kein Hintergrundbild für E1.")
+
+    canvas_e1.create_line(50, 0, 50, canvas_height_e1, fill="black")  # E1-Achse
+
+    def click_canvas_e1(event):
+        e1_mm = event.y / scale_e1
+        move_to_e1(e1_mm)
+
+    canvas_e1.bind("<Button-1>", click_canvas_e1)
+
+    button_frame_e1 = ttk.Frame(frame_e1)
+    button_frame_e1.pack(pady=5)
+
+    btn_e1_negative = ttk.Button(button_frame_e1, text='↓', command=move_e1_negative, width=3)
+    btn_e1_negative.pack()
+
+    btn_e1_positive = ttk.Button(button_frame_e1, text='↑', command=move_e1_positive, width=3)
+    btn_e1_positive.pack()
+
+    # -------------------- DC-Motor-Steuerung --------------------
+    frame_motor = ttk.Frame(root)
+    frame_motor.pack(pady=10)
+
+    label_motor = ttk.Label(frame_motor, text="DC-Motor-Steuerung")
+    label_motor.pack()
+
+    btn_motor_forward = ttk.Button(frame_motor, text="Motor Rückwärts", command=motor_forward)
+    btn_motor_forward.pack(side=tk.LEFT, padx=5)
+
+    btn_motor_reverse = ttk.Button(frame_motor, text="Motor Vorwärts", command=motor_reverse)
+    btn_motor_reverse.pack(side=tk.LEFT, padx=5)
+
+    btn_motor_stop = ttk.Button(frame_motor, text="Motor Stop", command=motor_stop)
+    btn_motor_stop.pack(side=tk.LEFT, padx=5)
+
+    # Hauptschleife starten
+    root.mainloop()
+
+    # Schließe die serielle Verbindung, wenn das Fenster geschlossen wird
+    if arduino_connected:
+        arduino.close()
