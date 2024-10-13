@@ -4,13 +4,8 @@ from pelvi.pelvi import Pelvi
 from pelvi.arduino import Arduino
 
 # Konfiguration
-arduino_port = 'COM7'  # Passen Sie den Port an
+arduino_port = 'COM7'
 arduino_baudrate = 115200
-
-# IDs der Punkte auf den Canvas
-point_xy = None
-point_ze0 = None
-point_e1 = None
 
 # Prüfen, ob Pillow installiert ist
 try:
@@ -23,9 +18,9 @@ def move_to_xy(x, y):
     if is_inside_circle(x, y):
         print("Bewegung in den roten Kreis ist nicht erlaubt.")
         return
-    _pelvi.move_axis_to("X", x)
-    _pelvi.move_axis_to("Y", y)
-    _arduino.send_coordinates('XY',_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y"))
+    pelvi.move_axis_to("X", x)
+    pelvi.move_axis_to("Y", y)
+    arduino.send_coordinates('XY', pelvi.get_axis_value("X"), pelvi.get_axis_value("Y"))
     update_point_xy()
 
 def click_canvas_xy(event):
@@ -38,11 +33,11 @@ def click_canvas_xy(event):
 
 def update_point_xy():
     global point_xy
-    x_pixel = _pelvi.get_axis_value("X")
-    y_pixel = _pelvi.get_axis_value("Y")
+    x_pixel = pelvi.get_axis_value("X")
+    y_pixel = pelvi.get_axis_value("Y")
     if point_xy:
         canvas_xy.delete(point_xy)
-    point_xy = canvas_xy.create_oval(x_pixel - 5, y_pixel -5, x_pixel +5, y_pixel +5, fill='blue')
+    point_xy = canvas_xy.create_oval(x_pixel - 5, y_pixel - 5, x_pixel + 5, y_pixel + 5, fill='blue')
 
 def is_inside_circle(x_mm, y_mm):
     dx = x_mm - circle_center_x_mm
@@ -51,9 +46,9 @@ def is_inside_circle(x_mm, y_mm):
     return distance_squared < circle_radius_mm**2
 
 def move_to_ze0(z, e0):
-    _pelvi.move_axis_to("Z", z)
-    _pelvi.move_axis_to("E0", e0)
-    _arduino.send_coordinates('ZE0',_pelvi.get_axis_value("Z"), _pelvi.get_axis_value("E0"))
+    pelvi.move_axis_to("Z", z)
+    pelvi.move_axis_to("E0", e0)
+    arduino.send_coordinates('ZE0', pelvi.get_axis_value("Z"), pelvi.get_axis_value("E0"))
     update_point_ze0()
 
 def click_canvas_ze0(event):
@@ -63,15 +58,15 @@ def click_canvas_ze0(event):
 
 def update_point_ze0():
     global point_ze0
-    z_pixel = _pelvi.get_axis_value("Z")
-    e0_pixel = _pelvi.get_axis_value("E0")
+    z_pixel = pelvi.get_axis_value("Z")
+    e0_pixel = pelvi.get_axis_value("E0")
     if point_ze0:
         canvas_ze0.delete(point_ze0)
-    point_ze0 = canvas_ze0.create_oval(z_pixel - 5, e0_pixel -5, z_pixel +5, e0_pixel +5, fill='blue')
+    point_ze0 = canvas_ze0.create_oval(z_pixel - 5, e0_pixel - 5, z_pixel + 5, e0_pixel + 5, fill='blue')
 
 def move_to_e1(e1):
-    _pelvi.move_axis_to("E1", e1)
-    _arduino.send_coordinates('E1', _pelvi.get_axis_value("E1"))
+    pelvi.move_axis_to("E1", e1)
+    arduino.send_coordinates('E1', pelvi.get_axis_value("E1"))
     update_point_e1()
 
 def click_canvas_e1(event):
@@ -80,16 +75,16 @@ def click_canvas_e1(event):
 
 def update_point_e1():
     global point_e1
-    e1_pixel = _pelvi.get_axis_value("E1")
+    e1_pixel = pelvi.get_axis_value("E1")
     if point_e1:
         canvas_e1.delete(point_e1)
-    point_e1 = canvas_e1.create_oval(45, e1_pixel -5, 55, e1_pixel +5, fill='blue')
+    point_e1 = canvas_e1.create_oval(45, e1_pixel - 5, 55, e1_pixel + 5, fill='blue')
 
 def adjust_circle_position(dx=0, dy=0):
     global circle_center_x_mm, circle_center_y_mm
 
-    circle_center_x_mm = max(0, min(_pelvi.get_axis_range("X"), circle_center_x_mm + dx))
-    circle_center_y_mm = max(0, min(_pelvi.get_axis_value("Y"), circle_center_y_mm + dy))
+    circle_center_x_mm = max(0, min(pelvi.get_axis_range("X"), circle_center_x_mm + dx))
+    circle_center_y_mm = max(0, min(pelvi.get_axis_value("Y"), circle_center_y_mm + dy))
     update_red_circle()
 
 def update_red_circle():
@@ -108,24 +103,24 @@ def update_red_circle():
     )
 
 def move_by(axis, value):
-    _pelvi.move_axis_by(axis, value)
+    pelvi.move_axis_by(axis, value)
     if axis == 'X' or axis == 'Y':
-        if is_inside_circle(_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y")):
-            _pelvi.move_axis_by(axis, -value)
+        if is_inside_circle(pelvi.get_axis_value("X"), pelvi.get_axis_value("Y")):
+            pelvi.move_axis_by(axis, -value)
             print("Bewegung in den roten Kreis ist nicht erlaubt.")
             return
-        move_to_xy(_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y"))
+        move_to_xy(pelvi.get_axis_value("X"), pelvi.get_axis_value("Y"))
     elif axis == 'Z' or axis == 'E0':
-        move_to_ze0(_pelvi.get_axis_value("Z"), _pelvi.get_axis_value("E0"))
+        move_to_ze0(pelvi.get_axis_value("Z"), pelvi.get_axis_value("E0"))
     elif axis == 'E1':
-        move_to_e1(_pelvi.get_axis_value("E1"))
+        move_to_e1(pelvi.get_axis_value("E1"))
 
 def motor_command(command):
-    _arduino.send_coordinates('MOTOR', command)
+    arduino.send_coordinates('MOTOR', command)
     print(f"DC Motor-Befehl: {command}")
 
 def save_data():
-    _pelvi.save_user_data()
+    pelvi.save_user_data()
     print("Data saved")
 
 def create_dc_motor_gui():
@@ -172,7 +167,6 @@ def create_e1_frame(_canvas_frame):
     btn_e1_positive.pack()
     return _canvas_e1
 
-
 def create_ze0_frame(_canvas_frame):
     frame_ze0 = ttk.Frame(_canvas_frame)
     frame_ze0.grid(row=0, column=1, padx=10)
@@ -204,7 +198,6 @@ def create_ze0_frame(_canvas_frame):
     btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=lambda: move_by("E0", -10), width=3)
     btn_e0_positive.grid(row=1, column=1, padx=2)
     return _canvas_ze0
-
 
 def create_xy_frame(_canvas_frame):
     frame_xy = ttk.Frame(_canvas_frame)
@@ -263,23 +256,8 @@ def create_xy_frame(_canvas_frame):
     btn_circle_y_positive.grid(row=2, column=1, padx=2)
     return _canvas_xy
 
-
-def calculate_sizes():
-    global canvas_width_xy, canvas_height_xy, canvas_width_ze0, canvas_height_ze0, canvas_width_e1, canvas_height_e1, circle_center_x_mm, circle_center_y_mm, circle_radius_mm
-
-    canvas_width_xy = _pelvi.get_axis_range("X")
-    canvas_height_xy = _pelvi.get_axis_range("Y")
-    canvas_width_ze0 = _pelvi.get_axis_range("Z")
-    canvas_height_ze0 = _pelvi.get_axis_range("E0")
-    canvas_width_e1 = 100
-    canvas_height_e1 = _pelvi.get_axis_range("E1")
-
-    circle_center_x_mm = 200.0
-    circle_center_y_mm = 120.0
-    circle_radius_mm = 60.0  # Durchmesser 120 mm, also Radius 60 mm
-
-def create_canvas_frame():
-    _canvas_frame = ttk.Frame(root)
+def create_canvas_frame(_root):
+    _canvas_frame = ttk.Frame(_root)
     _canvas_frame.pack(side=tk.TOP, padx=10, pady=10)
     return _canvas_frame
 
@@ -290,24 +268,40 @@ def create_main_window():
     style.theme_use('clam')
     return _root
 
-
 if __name__ == '__main__':
-    _pelvi = Pelvi()
-    _arduino = Arduino(arduino_port, arduino_baudrate)
+    pelvi = Pelvi()
+    arduino = Arduino(arduino_port, arduino_baudrate)
 
     root = create_main_window()
-    canvas_frame = create_canvas_frame()
+    canvas_frame = create_canvas_frame(root)
 
-    calculate_sizes()
+    # IDs der Punkte auf den Canvas
+    point_xy = None
+    point_ze0 = None
+    point_e1 = None
+
+    # Canvas-Größen from pelvi db
+    canvas_width_xy = pelvi.get_axis_range("X")
+    canvas_height_xy = pelvi.get_axis_range("Y")
+    canvas_width_ze0 = pelvi.get_axis_range("Z")
+    canvas_height_ze0 = pelvi.get_axis_range("E0")
+    canvas_height_e1 = pelvi.get_axis_range("E1")
+
+    # Set global variables to values
+    canvas_width_e1 = 100
+    circle_center_x_mm = 200.0
+    circle_center_y_mm = 120.0
+    circle_radius_mm = 60.0
+
     canvas_xy = create_xy_frame(canvas_frame)
     canvas_ze0 = create_ze0_frame(canvas_frame)
     canvas_e1 = create_e1_frame(canvas_frame)
     create_dc_motor_gui()
     create_save_button_gui()
 
-    _arduino.send_coordinates('XY',_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y"))
-    _arduino.send_coordinates('ZE0',_pelvi.get_axis_value("Z"), _pelvi.get_axis_value("E0"))
-    _arduino.send_coordinates('E1', _pelvi.get_axis_value("E1"))
+    arduino.send_coordinates('XY', pelvi.get_axis_value("X"), pelvi.get_axis_value("Y"))
+    arduino.send_coordinates('ZE0', pelvi.get_axis_value("Z"), pelvi.get_axis_value("E0"))
+    arduino.send_coordinates('E1', pelvi.get_axis_value("E1"))
     update_point_xy()
     update_point_ze0()
     update_point_e1()
