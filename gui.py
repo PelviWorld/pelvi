@@ -86,34 +86,20 @@ def update_point_e1():
         canvas_e1.delete(point_e1)
     point_e1 = canvas_e1.create_oval(45, e1_pixel -5, 55, e1_pixel +5, fill='blue')
 
-# Funktionen zum Bewegen des roten Kreises
-def move_circle_x_positive():
-    adjust_circle_position(dx=10, dy=0)
-
-def move_circle_x_negative():
-    adjust_circle_position(dx=-10, dy=0)
-
-def move_circle_y_positive():
-    adjust_circle_position(dx=0, dy=-10)
-
-def move_circle_y_negative():
-    adjust_circle_position(dx=0, dy=10)
-
 def adjust_circle_position(dx=0, dy=0):
     global circle_center_x_mm, circle_center_y_mm
-    x_max_pos = 300
-    y_max_pos = 470
-    circle_center_x_mm = max(0, min(x_max_pos, circle_center_x_mm + dx))
-    circle_center_y_mm = max(0, min(y_max_pos, circle_center_y_mm + dy))
+    circle_center_x_mm = max(0, min(_pelvi.get_axis_range("X"), circle_center_x_mm + dx))
+    circle_center_y_mm = max(0, min(_pelvi.get_axis_value("Y"), circle_center_y_mm + dy))
     update_red_circle()
 
 def update_red_circle():
     global circle_center_x_px, circle_center_y_px, circle_radius_px
-    # Aktualisieren der Pixelkoordinaten
+
     circle_center_x_px = circle_center_x_mm * scale_x
     circle_center_y_px = circle_center_y_mm * scale_y
-    # Alten Kreis löschen und neuen zeichnen
+
     canvas_xy.delete('red_circle')
+
     canvas_xy.create_oval(
         circle_center_x_px - circle_radius_px,
         circle_center_y_px - circle_radius_px,
@@ -133,22 +119,152 @@ def move_by(pelvi, axis, value):
     elif axis == 'E1':
         move_to_e1(pelvi.get_axis_value("E1"))
 
-# Funktionen für den DC-Motor
-def motor_forward():
-    _arduino.send_coordinates('MOTOR', 'MOTOR FORWARD')
-    print("Motor läuft rückwärts.")
-
-def motor_reverse():
-    _arduino.send_coordinates('MOTOR', 'MOTOR REVERSE')
-    print("Motor läuft vorwärts.")
-
-def motor_stop():
-    _arduino.send_coordinates('MOTOR', 'MOTOR STOP')
-    print("Motor gestoppt.")
+def motor_command(command):
+    _arduino.send_coordinates('MOTOR', command)
+    print(f"DC Motor-Befehl: {command}")
 
 def save_data():
     _pelvi.save_user_data()
     print("Data saved")
+
+def create_dc_motor_gui():
+    frame_motor = ttk.Frame(root)
+    frame_motor.pack(pady=10)
+    label_motor = ttk.Label(frame_motor, text="DC-Motor-Steuerung")
+    label_motor.pack()
+    btn_motor_forward = ttk.Button(frame_motor, text="Motor Rückwärts", command=lambda: motor_command('MOTOR FORWARD'))
+    btn_motor_forward.pack(side=tk.LEFT, padx=5)
+    btn_motor_reverse = ttk.Button(frame_motor, text="Motor Vorwärts", command=lambda: motor_command('MOTOR REVERSE'))
+    btn_motor_reverse.pack(side=tk.LEFT, padx=5)
+    btn_motor_stop = ttk.Button(frame_motor, text="Motor Stop", command=lambda: motor_command('MOTOR STOP'))
+    btn_motor_stop.pack(side=tk.LEFT, padx=5)
+
+def create_save_button_gui():
+    btn_save = ttk.Button(root, text="Save", command=save_data)
+    btn_save.pack(pady=10)
+
+def create_e1_frame():
+    global canvas_e1, button_frame_e1
+
+    frame_e1 = ttk.Frame(canvas_frame)
+    frame_e1.grid(row=0, column=2, padx=10)
+    canvas_e1 = tk.Canvas(frame_e1, width=canvas_width_e1, height=canvas_height_e1)
+    canvas_e1.pack()
+
+    # Hintergrundbild für E1
+    if Image:
+        try:
+            img_e1 = Image.open('background_e1.png')
+            img_e1 = img_e1.resize((canvas_width_e1, canvas_height_e1))
+            bg_e1 = ImageTk.PhotoImage(img_e1)
+            canvas_e1.create_image(0, 0, image=bg_e1, anchor='nw')
+        except:
+            print("Konnte Hintergrundbild für E1 nicht laden.")
+    else:
+        print("Pillow nicht installiert. Kein Hintergrundbild für E1.")
+    canvas_e1.create_line(50, 0, 50, canvas_height_e1, fill="black")  # E1-Achse
+    canvas_e1.bind("<Button-1>", click_canvas_e1)
+    button_frame_e1 = ttk.Frame(frame_e1)
+    button_frame_e1.pack(pady=5)
+    btn_e1_negative = ttk.Button(button_frame_e1, text='↓', command=lambda: move_by(_pelvi, "E1", 10), width=3)
+    btn_e1_negative.pack()
+
+    btn_e1_positive = ttk.Button(button_frame_e1, text='↑', command=lambda: move_by(_pelvi, "E1", -10), width=3)
+    btn_e1_positive.pack()
+
+
+def create_ze0_frame():
+    global canvas_ze0
+
+    frame_ze0 = ttk.Frame(canvas_frame)
+    frame_ze0.grid(row=0, column=1, padx=10)
+    canvas_ze0 = tk.Canvas(frame_ze0, width=canvas_width_ze0, height=canvas_height_ze0)
+    canvas_ze0.pack()
+
+    # Hintergrundbild für ZE0
+    if Image:
+        try:
+            img_ze0 = Image.open('background_ze0.png')
+            img_ze0 = img_ze0.resize((canvas_width_ze0, canvas_height_ze0))
+            bg_ze0 = ImageTk.PhotoImage(img_ze0)
+            canvas_ze0.create_image(0, 0, image=bg_ze0, anchor='nw')
+        except:
+            print("Konnte Hintergrundbild für ZE0 nicht laden.")
+    else:
+        print("Pillow nicht installiert. Kein Hintergrundbild für ZE0.")
+    canvas_ze0.create_line(0, 0, 0, canvas_height_ze0, fill="black")  # E0-Achse
+    canvas_ze0.create_line(0, 0, canvas_width_ze0, 0, fill="black")  # Z-Achse
+    canvas_ze0.bind("<Button-1>", click_canvas_ze0)
+    button_frame_ze0 = ttk.Frame(frame_ze0)
+    button_frame_ze0.pack(pady=5)
+    btn_z_negative = ttk.Button(button_frame_ze0, text='←', command=lambda: move_by(_pelvi, "Z", -10), width=3)
+    btn_z_negative.grid(row=0, column=0, padx=2)
+    btn_z_positive = ttk.Button(button_frame_ze0, text='→', command=lambda: move_by(_pelvi, "Z", 10), width=3)
+    btn_z_positive.grid(row=0, column=1, padx=2)
+    btn_e0_negative = ttk.Button(button_frame_ze0, text='↓', command=lambda: move_by(_pelvi, "E0", 10), width=3)
+    btn_e0_negative.grid(row=1, column=0, padx=2)
+    btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=lambda: move_by(_pelvi, "E0", -10), width=3)
+    btn_e0_positive.grid(row=1, column=1, padx=2)
+
+
+def create_xy_frame():
+    global canvas_xy
+
+    frame_xy = ttk.Frame(canvas_frame)
+    frame_xy.grid(row=0, column=0, padx=10)
+    canvas_xy = tk.Canvas(frame_xy, width=canvas_width_xy, height=canvas_height_xy)
+    canvas_xy.pack()
+
+    # Hintergrundbild für XY
+    if Image:
+        try:
+            img_xy = Image.open('background_xy.png')
+            img_xy = img_xy.resize((canvas_width_xy, canvas_height_xy))
+            bg_xy = ImageTk.PhotoImage(img_xy)
+            canvas_xy.create_image(0, 0, image=bg_xy, anchor='nw')
+        except:
+            print("Konnte Hintergrundbild für XY nicht laden.")
+    else:
+        print("Pillow nicht installiert. Kein Hintergrundbild für XY.")
+
+    # Zeichnen des roten Kreises
+    canvas_xy.create_oval(
+        circle_center_x_px - circle_radius_px,
+        circle_center_y_px - circle_radius_px,
+        circle_center_x_px + circle_radius_px,
+        circle_center_y_px + circle_radius_px,
+        fill='red',
+        outline='',
+        tags='red_circle'  # Hinzugefügtes Tag für späteres Löschen
+    )
+    canvas_xy.create_line(0, 0, 0, canvas_height_xy, fill="black")  # Y-Achse
+    canvas_xy.create_line(0, 0, canvas_width_xy, 0, fill="black")  # X-Achse
+    canvas_xy.bind("<Button-1>", click_canvas_xy)
+    button_frame_xy = ttk.Frame(frame_xy)
+    button_frame_xy.pack(pady=5)
+    btn_x_negative = ttk.Button(button_frame_xy, text='←', command=lambda: move_by(_pelvi, "X", -10), width=3)
+    btn_x_negative.grid(row=0, column=0, padx=2)
+    btn_x_positive = ttk.Button(button_frame_xy, text='→', command=lambda: move_by(_pelvi, "X", 10), width=3)
+    btn_x_positive.grid(row=0, column=1, padx=2)
+    btn_y_negative = ttk.Button(button_frame_xy, text='↓', command=lambda: move_by(_pelvi, "Y", 10), width=3)
+    btn_y_negative.grid(row=1, column=0, padx=2)
+    btn_y_positive = ttk.Button(button_frame_xy, text='↑', command=lambda: move_by(_pelvi, "Y", -10), width=3)
+    btn_y_positive.grid(row=1, column=1, padx=2)
+
+    # Steuerung für den roten Kreis
+    frame_circle = ttk.Frame(frame_xy)
+    frame_circle.pack(pady=5)
+    label_circle = ttk.Label(frame_circle, text="Roter Punkt bewegen")
+    label_circle.grid(row=0, column=0, columnspan=2)
+    btn_circle_x_negative = ttk.Button(frame_circle, text='←', command=lambda: adjust_circle_position(-10,0), width=3)
+    btn_circle_x_negative.grid(row=1, column=0, padx=2)
+    btn_circle_x_positive = ttk.Button(frame_circle, text='→', command=lambda: adjust_circle_position(10,0), width=3)
+    btn_circle_x_positive.grid(row=1, column=1, padx=2)
+    btn_circle_y_negative = ttk.Button(frame_circle, text='↓', command=lambda: adjust_circle_position(0,10), width=3)
+    btn_circle_y_negative.grid(row=2, column=0, padx=2)
+    btn_circle_y_positive = ttk.Button(frame_circle, text='↑', command=lambda: adjust_circle_position(0,-10), width=3)
+    btn_circle_y_positive.grid(row=2, column=1, padx=2)
+
 
 if __name__ == '__main__':
     _pelvi = Pelvi()
@@ -196,165 +312,11 @@ if __name__ == '__main__':
     canvas_frame = ttk.Frame(root)
     canvas_frame.pack(side=tk.TOP, padx=10, pady=10)
 
-    # -------------------- XY Achsen --------------------
-    frame_xy = ttk.Frame(canvas_frame)
-    frame_xy.grid(row=0, column=0, padx=10)
-
-    canvas_xy = tk.Canvas(frame_xy, width=canvas_width_xy, height=canvas_height_xy)
-    canvas_xy.pack()
-
-    # Hintergrundbild für XY
-    if Image:
-        try:
-            img_xy = Image.open('background_xy.png')
-            img_xy = img_xy.resize((canvas_width_xy, canvas_height_xy))
-            bg_xy = ImageTk.PhotoImage(img_xy)
-            canvas_xy.create_image(0, 0, image=bg_xy, anchor='nw')
-        except:
-            print("Konnte Hintergrundbild für XY nicht laden.")
-    else:
-        print("Pillow nicht installiert. Kein Hintergrundbild für XY.")
-
-    # Zeichnen des roten Kreises
-    canvas_xy.create_oval(
-        circle_center_x_px - circle_radius_px,
-        circle_center_y_px - circle_radius_px,
-        circle_center_x_px + circle_radius_px,
-        circle_center_y_px + circle_radius_px,
-        fill='red',
-        outline='',
-        tags='red_circle'  # Hinzugefügtes Tag für späteres Löschen
-    )
-
-    canvas_xy.create_line(0, 0, 0, canvas_height_xy, fill="black")  # Y-Achse
-    canvas_xy.create_line(0, 0, canvas_width_xy, 0, fill="black")  # X-Achse
-
-    canvas_xy.bind("<Button-1>", click_canvas_xy)
-
-    button_frame_xy = ttk.Frame(frame_xy)
-    button_frame_xy.pack(pady=5)
-
-    btn_x_negative = ttk.Button(button_frame_xy, text='←', command=lambda: move_by(_pelvi, "X", -10), width=3)
-    btn_x_negative.grid(row=0, column=0, padx=2)
-
-    btn_x_positive = ttk.Button(button_frame_xy, text='→', command=lambda: move_by(_pelvi, "X", 10), width=3)
-    btn_x_positive.grid(row=0, column=1, padx=2)
-
-    btn_y_negative = ttk.Button(button_frame_xy, text='↓', command=lambda: move_by(_pelvi, "Y", 10), width=3)
-    btn_y_negative.grid(row=1, column=0, padx=2)
-
-    btn_y_positive = ttk.Button(button_frame_xy, text='↑', command=lambda: move_by(_pelvi, "Y", -10), width=3)
-    btn_y_positive.grid(row=1, column=1, padx=2)
-
-    # Steuerung für den roten Kreis
-    frame_circle = ttk.Frame(frame_xy)
-    frame_circle.pack(pady=5)
-
-    label_circle = ttk.Label(frame_circle, text="Roter Punkt bewegen")
-    label_circle.grid(row=0, column=0, columnspan=2)
-
-    btn_circle_x_negative = ttk.Button(frame_circle, text='←', command=move_circle_x_negative, width=3)
-    btn_circle_x_negative.grid(row=1, column=0, padx=2)
-
-    btn_circle_x_positive = ttk.Button(frame_circle, text='→', command=move_circle_x_positive, width=3)
-    btn_circle_x_positive.grid(row=1, column=1, padx=2)
-
-    btn_circle_y_negative = ttk.Button(frame_circle, text='↓', command=move_circle_y_negative, width=3)
-    btn_circle_y_negative.grid(row=2, column=0, padx=2)
-
-    btn_circle_y_positive = ttk.Button(frame_circle, text='↑', command=move_circle_y_positive, width=3)
-    btn_circle_y_positive.grid(row=2, column=1, padx=2)
-
-    # -------------------- ZE0 Achsen --------------------
-    frame_ze0 = ttk.Frame(canvas_frame)
-    frame_ze0.grid(row=0, column=1, padx=10)
-
-    canvas_ze0 = tk.Canvas(frame_ze0, width=canvas_width_ze0, height=canvas_height_ze0)
-    canvas_ze0.pack()
-
-    # Hintergrundbild für ZE0
-    if Image:
-        try:
-            img_ze0 = Image.open('background_ze0.png')
-            img_ze0 = img_ze0.resize((canvas_width_ze0, canvas_height_ze0))
-            bg_ze0 = ImageTk.PhotoImage(img_ze0)
-            canvas_ze0.create_image(0, 0, image=bg_ze0, anchor='nw')
-        except:
-            print("Konnte Hintergrundbild für ZE0 nicht laden.")
-    else:
-        print("Pillow nicht installiert. Kein Hintergrundbild für ZE0.")
-
-    canvas_ze0.create_line(0, 0, 0, canvas_height_ze0, fill="black")  # E0-Achse
-    canvas_ze0.create_line(0, 0, canvas_width_ze0, 0, fill="black")  # Z-Achse
-
-    canvas_ze0.bind("<Button-1>", click_canvas_ze0)
-
-    button_frame_ze0 = ttk.Frame(frame_ze0)
-    button_frame_ze0.pack(pady=5)
-
-    btn_z_negative = ttk.Button(button_frame_ze0, text='←', command=lambda: move_by(_pelvi, "Z", -10), width=3)
-    btn_z_negative.grid(row=0, column=0, padx=2)
-
-    btn_z_positive = ttk.Button(button_frame_ze0, text='→', command=lambda: move_by(_pelvi, "Z", 10), width=3)
-    btn_z_positive.grid(row=0, column=1, padx=2)
-
-    btn_e0_negative = ttk.Button(button_frame_ze0, text='↓', command=lambda: move_by(_pelvi, "E0", 10), width=3)
-    btn_e0_negative.grid(row=1, column=0, padx=2)
-
-    btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=lambda: move_by(_pelvi, "E0", -10), width=3)
-    btn_e0_positive.grid(row=1, column=1, padx=2)
-
-    # -------------------- E1 Achse --------------------
-    frame_e1 = ttk.Frame(canvas_frame)
-    frame_e1.grid(row=0, column=2, padx=10)
-
-    canvas_e1 = tk.Canvas(frame_e1, width=canvas_width_e1, height=canvas_height_e1)
-    canvas_e1.pack()
-
-    # Hintergrundbild für E1
-    if Image:
-        try:
-            img_e1 = Image.open('background_e1.png')
-            img_e1 = img_e1.resize((canvas_width_e1, canvas_height_e1))
-            bg_e1 = ImageTk.PhotoImage(img_e1)
-            canvas_e1.create_image(0, 0, image=bg_e1, anchor='nw')
-        except:
-            print("Konnte Hintergrundbild für E1 nicht laden.")
-    else:
-        print("Pillow nicht installiert. Kein Hintergrundbild für E1.")
-
-    canvas_e1.create_line(50, 0, 50, canvas_height_e1, fill="black")  # E1-Achse
-
-    canvas_e1.bind("<Button-1>", click_canvas_e1)
-
-    button_frame_e1 = ttk.Frame(frame_e1)
-    button_frame_e1.pack(pady=5)
-
-    btn_e1_negative = ttk.Button(button_frame_e1, text='↓', command=lambda: move_by(_pelvi, "E1", 10), width=3)
-    btn_e1_negative.pack()
-
-    btn_e1_positive = ttk.Button(button_frame_e1, text='↑', command=lambda: move_by(_pelvi, "E1", -10), width=3)
-    btn_e1_positive.pack()
-
-    # -------------------- DC-Motor-Steuerung --------------------
-    frame_motor = ttk.Frame(root)
-    frame_motor.pack(pady=10)
-
-    label_motor = ttk.Label(frame_motor, text="DC-Motor-Steuerung")
-    label_motor.pack()
-
-    btn_motor_forward = ttk.Button(frame_motor, text="Motor Rückwärts", command=motor_forward)
-    btn_motor_forward.pack(side=tk.LEFT, padx=5)
-
-    btn_motor_reverse = ttk.Button(frame_motor, text="Motor Vorwärts", command=motor_reverse)
-    btn_motor_reverse.pack(side=tk.LEFT, padx=5)
-
-    btn_motor_stop = ttk.Button(frame_motor, text="Motor Stop", command=motor_stop)
-    btn_motor_stop.pack(side=tk.LEFT, padx=5)
-
-    # Save button
-    btn_save = ttk.Button(root, text="Save", command=save_data)
-    btn_save.pack(pady=10)
+    create_xy_frame()
+    create_ze0_frame()
+    create_e1_frame()
+    create_dc_motor_gui()
+    create_save_button_gui()
 
     _arduino.send_coordinates('XY',_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y"))
     _arduino.send_coordinates('ZE0',_pelvi.get_axis_value("Z"), _pelvi.get_axis_value("E0"))
