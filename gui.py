@@ -153,6 +153,10 @@ def motor_stop():
     _arduino.send_coordinates('MOTOR', 'MOTOR STOP')
     print("Motor gestoppt.")
 
+def save_data():
+    _pelvi.save_user_data()
+    print("Data saved")
+
 if __name__ == '__main__':
     _pelvi = Pelvi()
     _arduino = Arduino(arduino_port, arduino_baudrate)
@@ -354,6 +358,10 @@ if __name__ == '__main__':
 
     btn_motor_stop = ttk.Button(frame_motor, text="Motor Stop", command=motor_stop)
     btn_motor_stop.pack(side=tk.LEFT, padx=5)
+
+    # Save button
+    btn_save = ttk.Button(root, text="Save", command=save_data)
+    btn_save.pack(pady=10)
 
     # Hauptschleife starten
     root.mainloop()
