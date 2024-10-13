@@ -37,46 +37,21 @@ except ImportError:
 # Funktion, um zu prüfen, ob der Arduino verbunden ist
 
 # Funktion zum Senden der Koordinaten
-def send_coordinates(axis, *args):
-    if _arduino:
-        if axis == 'XY':
-            x_mm, y_mm = args
-            command = f"XY {x_mm},{y_mm}\n"
-            _arduino.write(command.encode())
-            print(f"Gesendet: {command.strip()}")
-        elif axis == 'ZE0':
-            z_mm, e0_mm = args
-            command = f"ZE0 {z_mm},{e0_mm}\n"
-            _arduino.write(command.encode())
-            print(f"Gesendet: {command.strip()}")
-        elif axis == 'E1':
-            e1_mm = args[0]
-            command = f"E1 {e1_mm}\n"
-            _arduino.write(command.encode())
-            print(f"Gesendet: {command.strip()}")
-        elif axis == 'MOTOR':
-            command = f"{args[0]}\n"
-            _arduino.write(command.encode())
-            print(f"Gesendet: {command.strip()}")
-    else:
-        print("Arduino ist nicht verbunden.")
 
 # Funktionen zum Bewegen und Aktualisieren der Positionen
 def move_to_xy(x, y):
-    global current_x, current_y
-    # Überprüfung, ob die Zielposition innerhalb des roten Kreises liegt
     if is_inside_circle(x, y):
         print("Bewegung in den roten Kreis ist nicht erlaubt.")
         return
-    current_x = max(0, min(X_MAX_POS, x))
-    current_y = max(0, min(Y_MAX_POS, y))
-    send_coordinates('XY', current_x, current_y)
+    _pelvi.move_axis_to("X", x)
+    _pelvi.move_axis_to("Y", y)
+    _arduino.send_coordinates('XY',_pelvi.get_axis_value("X"), _pelvi.get_axis_value("Y"))
     update_point_xy()
 
 def update_point_xy():
     global point_xy
-    x_pixel = current_x * scale_x
-    y_pixel = current_y * scale_y
+    x_pixel = _pelvi.get_axis_value("X")* scale_x
+    y_pixel = _pelvi.get_axis_value("Y") * scale_y
     if point_xy:
         canvas_xy.delete(point_xy)
     point_xy = canvas_xy.create_oval(x_pixel - 5, y_pixel -5, x_pixel +5, y_pixel +5, fill='blue')
@@ -88,29 +63,28 @@ def is_inside_circle(x_mm, y_mm):
     return distance_squared < circle_radius_mm**2
 
 def move_to_ze0(z, e0):
-    global current_z, current_e0
-    current_z = max(0, min(Z_MAX_POS, z))
-    current_e0 = max(0, min(E0_MAX_POS, e0))
-    send_coordinates('ZE0', current_z, current_e0)
+    _pelvi.move_axis_to("Z", z)
+    _pelvi.move_axis_to("E0", e0)
+    _arduino.send_coordinates('ZE0',_pelvi.get_axis_value("Z"), _pelvi.get_axis_value("E0"))
     update_point_ze0()
 
 def update_point_ze0():
     global point_ze0
-    z_pixel = current_z * scale_z
-    e0_pixel = current_e0 * scale_e0
+    z_pixel = _pelvi.get_axis_value("Z") * scale_z
+    e0_pixel = _pelvi.get_axis_value("E0") * scale_e0
     if point_ze0:
         canvas_ze0.delete(point_ze0)
     point_ze0 = canvas_ze0.create_oval(z_pixel - 5, e0_pixel -5, z_pixel +5, e0_pixel +5, fill='blue')
 
 def move_to_e1(e1):
     global current_e1
-    current_e1 = max(0, min(E1_MAX_POS, e1))
-    send_coordinates('E1', current_e1)
+    _pelvi.move_axis_to("E1", e1)
+    _arduino.send_coordinates('E1', _pelvi.get_axis_value("E1"))
     update_point_e1()
 
 def update_point_e1():
     global point_e1
-    e1_pixel = current_e1 * scale_e1
+    e1_pixel = _pelvi.get_axis_value("E1") * scale_e1
     if point_e1:
         canvas_e1.delete(point_e1)
     point_e1 = canvas_e1.create_oval(45, e1_pixel -5, 55, e1_pixel +5, fill='blue')
@@ -162,15 +136,15 @@ def move_by(pelvi, axis, value):
 
 # Funktionen für den DC-Motor
 def motor_forward():
-    send_coordinates('MOTOR', 'MOTOR FORWARD')
+    _arduino.send_coordinates('MOTOR', 'MOTOR FORWARD')
     print("Motor läuft rückwärts.")
 
 def motor_reverse():
-    send_coordinates('MOTOR', 'MOTOR REVERSE')
+    _arduino.send_coordinates('MOTOR', 'MOTOR REVERSE')
     print("Motor läuft vorwärts.")
 
 def motor_stop():
-    send_coordinates('MOTOR', 'MOTOR STOP')
+    _arduino.send_coordinates('MOTOR', 'MOTOR STOP')
     print("Motor gestoppt.")
 
 if __name__ == '__main__':
