@@ -1,4 +1,4 @@
-from axis import Axis
+from pelvi.axis import Axis
 
 class Device:
     def __init__(self, deviceid, devicename, axis_list):

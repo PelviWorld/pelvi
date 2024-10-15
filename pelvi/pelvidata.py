@@ -1,10 +1,10 @@
-from createdatabase import get_database
-from user import User
-from device import Device
-from axis import Axis
-from position import Position
-from positions import Positions
-from blockedarea import Blockedvalues
+from pelvi.createdatabase import get_database
+from pelvi.user import User
+from pelvi.device import Device
+from pelvi.axis import Axis
+from pelvi.position import Position
+from pelvi.positions import Positions
+from pelvi.blockedarea import Blockedvalues
 
 class Pelvidata:
     def __init__(self, name = "pelvi.db"):
