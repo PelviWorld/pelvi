@@ -51,53 +51,31 @@ unsigned long lastMovementTime = 0;
 bool motorsEnabled = true;
 const unsigned long motorDisableDelay = 30000; // 30 Sekunden in Millisekunden
 
+struct AxisState {
+  int stepPin;
+  int dirPin;
+  long stepsRemaining;
+  unsigned long lastStepTime;
+  bool direction;
+};
+
+AxisState axes[5] = {
+  {X_STEP_PIN, X_DIR_PIN, 0, 0, true},
+  {Y_STEP_PIN, Y_DIR_PIN, 0, 0, true},
+  {Z_STEP_PIN, Z_DIR_PIN, 0, 0, true},
+  {E0_STEP_PIN, E0_DIR_PIN, 0, 0, true},
+  {E1_STEP_PIN, E1_DIR_PIN, 0, 0, true}
+};
+
+const unsigned long stepDelay = 1000000 / maxSpeed;  // Delay between steps in microseconds
+
 void setup() {
   Serial.begin(115200);
   Serial.println("System startet...");
 
-  // Setze Pin-Modi für Schrittmotoren
-  pinMode(X_STEP_PIN, OUTPUT);
-  pinMode(X_DIR_PIN, OUTPUT);
-  pinMode(X_ENABLE_PIN, OUTPUT);
-  pinMode(X_MIN_PIN, INPUT_PULLUP);
-
-  pinMode(Y_STEP_PIN, OUTPUT);
-  pinMode(Y_DIR_PIN, OUTPUT);
-  pinMode(Y_ENABLE_PIN, OUTPUT);
-  pinMode(Y_MIN_PIN, INPUT_PULLUP);
-
-  pinMode(Z_STEP_PIN, OUTPUT);
-  pinMode(Z_DIR_PIN, OUTPUT);
-  pinMode(Z_ENABLE_PIN, OUTPUT);
-  pinMode(Z_MIN_PIN, INPUT_PULLUP);
-
-  pinMode(E0_STEP_PIN, OUTPUT);
-  pinMode(E0_DIR_PIN, OUTPUT);
-  pinMode(E0_ENABLE_PIN, OUTPUT);
-  pinMode(E0_MIN_PIN, INPUT_PULLUP);
-
-  pinMode(E1_STEP_PIN, OUTPUT);
-  pinMode(E1_DIR_PIN, OUTPUT);
-  pinMode(E1_ENABLE_PIN, OUTPUT);
-  pinMode(E1_MIN_PIN, INPUT_PULLUP);
-
-  // Setze Pin-Modi für DC-Motorsteuerung
-  pinMode(MOTOR_IN1_PIN, OUTPUT);
-  pinMode(MOTOR_IN2_PIN, OUTPUT);
-
-  // Motor initial stoppen
-  digitalWrite(MOTOR_IN1_PIN, LOW);
-  digitalWrite(MOTOR_IN2_PIN, LOW);
-
-  // Aktiviere Schrittmotoren
+  initializePins();
   enableMotors();
-
-  // Homing durchführen
-  Serial.println("Homing wird ausgeführt...");
   homing();
-  Serial.println("Homing abgeschlossen.");
-
-  // Setze die Zeit des letzten Bewegungsbefehls
   lastMovementTime = millis();
 }
 
@@ -108,214 +86,141 @@ void loop() {
     processCommand(command);
   }
 
-  // Überprüfe, ob die Motoren deaktiviert werden sollen
   if (motorsEnabled && (millis() - lastMovementTime >= motorDisableDelay)) {
     disableMotors();
   }
+
+  performConcurrentMovements();
+}
+
+void initializePins() {
+  int stepPins[] = {X_STEP_PIN, Y_STEP_PIN, Z_STEP_PIN, E0_STEP_PIN, E1_STEP_PIN};
+  int dirPins[] = {X_DIR_PIN, Y_DIR_PIN, Z_DIR_PIN, E0_DIR_PIN, E1_DIR_PIN};
+  int enablePins[] = {X_ENABLE_PIN, Y_ENABLE_PIN, Z_ENABLE_PIN, E0_ENABLE_PIN, E1_ENABLE_PIN};
+  int minPins[] = {X_MIN_PIN, Y_MIN_PIN, Z_MIN_PIN, E0_MIN_PIN, E1_MIN_PIN};
+
+  for (int i = 0; i < 5; i++) {
+    pinMode(stepPins[i], OUTPUT);
+    pinMode(dirPins[i], OUTPUT);
+    pinMode(enablePins[i], OUTPUT);
+    pinMode(minPins[i], INPUT_PULLUP);
+  }
+
+  pinMode(MOTOR_IN1_PIN, OUTPUT);
+  pinMode(MOTOR_IN2_PIN, OUTPUT);
+
+  digitalWrite(MOTOR_IN1_PIN, LOW);
+  digitalWrite(MOTOR_IN2_PIN, LOW);
 }
 
 void homing() {
-  enableMotors(); // Stelle sicher, dass die Motoren aktiviert sind
+  Serial.println("Homing wird ausgeführt...");
 
-  // Richtung zu den Endschaltern setzen (LOW für Min-Endschalter)
-  digitalWrite(X_DIR_PIN, LOW);
-  digitalWrite(Y_DIR_PIN, LOW);
-  digitalWrite(Z_DIR_PIN, LOW);
-  digitalWrite(E0_DIR_PIN, LOW);
-  digitalWrite(E1_DIR_PIN, LOW);
-
+  int dirPins[] = {X_DIR_PIN, Y_DIR_PIN, Z_DIR_PIN, E0_DIR_PIN, E1_DIR_PIN};
+  int minPins[] = {X_MIN_PIN, Y_MIN_PIN, Z_MIN_PIN, E0_MIN_PIN, E1_MIN_PIN};
   bool axisHomed[5] = {false, false, false, false, false};
-  unsigned long homingDelay = 1000000 / homingSpeed;  // Verzögerung zwischen Schritten in Mikrosekunden
+  unsigned long homingDelay = 1000000 / homingSpeed;
 
-  while (!(axisHomed[0] && axisHomed[1] && axisHomed[2] && axisHomed[3] && axisHomed[4])) {
-    if (!axisHomed[0]) {
-      if (digitalRead(X_MIN_PIN) == LOW) {
-        axisHomed[0] = true;
-        currentX = 0;
-        Serial.println("X-Achse gehomed.");
-      } else {
-        stepMotor(X_STEP_PIN);
-      }
-    }
-    if (!axisHomed[1]) {
-      if (digitalRead(Y_MIN_PIN) == LOW) {
-        axisHomed[1] = true;
-        currentY = 0;
-        Serial.println("Y-Achse gehomed.");
-      } else {
-        stepMotor(Y_STEP_PIN);
-      }
-    }
-    if (!axisHomed[2]) {
-      if (digitalRead(Z_MIN_PIN) == LOW) {
-        axisHomed[2] = true;
-        currentZ = 0;
-        Serial.println("Z-Achse gehomed.");
-      } else {
-        stepMotor(Z_STEP_PIN);
-      }
-    }
-    if (!axisHomed[3]) {
-      if (digitalRead(E0_MIN_PIN) == LOW) {
-        axisHomed[3] = true;
-        currentE0 = 0;
-        Serial.println("E0-Achse gehomed.");
-      } else {
-        stepMotor(E0_STEP_PIN);
-      }
-    }
-    if (!axisHomed[4]) {
-      if (digitalRead(E1_MIN_PIN) == LOW) {
-        axisHomed[4] = true;
-        currentE1 = 0;
-        Serial.println("E1-Achse gehomed.");
-      } else {
-        stepMotor(E1_STEP_PIN);
-      }
-    }
-    delayMicroseconds(homingDelay);
+  for (int i = 0; i < 5; i++) {
+    digitalWrite(dirPins[i], LOW);
   }
 
-  lastMovementTime = millis(); // Aktualisiere die Zeit des letzten Bewegungsbefehls
+  while (!(axisHomed[0] && axisHomed[1] && axisHomed[2] && axisHomed[3] && axisHomed[4])) {
+    for (int i = 0; i < 5; i++) {
+      if (!axisHomed[i] && digitalRead(minPins[i]) == LOW) {
+        axisHomed[i] = true;
+      } else if (!axisHomed[i]) {
+        stepMotor(axes[i].stepPin);
+        delayMicroseconds(homingDelay);
+      }
+    }
+  }
+
+  currentX = 0;
+  currentY = 0;
+  currentZ = 0;
+  currentE0 = 0;
+  currentE1 = 0;
+
+  Serial.println("Homing abgeschlossen.");
 }
 
 void processCommand(String command) {
   if (command.startsWith("XY")) {
-    int commaIndex = command.indexOf(',');
-    if (commaIndex > -1) {
-      float xTarget = command.substring(2, commaIndex).toFloat();
-      float yTarget = command.substring(commaIndex + 1).toFloat();
-      Serial.print("Bewege XY zu: ");
-      Serial.print(xTarget);
-      Serial.print(", ");
-      Serial.println(yTarget);
-      moveXY(xTarget, yTarget);
-    } else {
-      Serial.println("Ungültiger XY-Befehl.");
-    }
+    float xTarget = command.substring(2).toFloat();
+    float yTarget = command.substring(command.indexOf(' ') + 1).toFloat();
+    moveAxis(0, xTarget);
+    moveAxis(1, yTarget);
   } else if (command.startsWith("ZE0")) {
-    int commaIndex = command.indexOf(',');
-    if (commaIndex > -1) {
-      float zTarget = command.substring(3, commaIndex).toFloat();
-      float e0Target = command.substring(commaIndex + 1).toFloat();
-      Serial.print("Bewege Z und E0 zu: ");
-      Serial.print(zTarget);
-      Serial.print(", ");
-      Serial.println(e0Target);
-      moveZE0(zTarget, e0Target);
-    } else {
-      Serial.println("Ungültiger ZE0-Befehl.");
-    }
+    float zTarget = command.substring(3).toFloat();
+    float e0Target = command.substring(command.indexOf(' ') + 1).toFloat();
+    moveAxis(2, zTarget);
+    moveAxis(3, e0Target);
   } else if (command.startsWith("E1")) {
     float e1Target = command.substring(2).toFloat();
-    Serial.print("Bewege E1 zu: ");
-    Serial.println(e1Target);
-    moveE1(e1Target);
+    moveAxis(4, e1Target);
   } else if (command == "MOTOR FORWARD") {
-    motorForward();
-    Serial.println("Motor läuft vorwärts.");
+    controlMotor(true);
   } else if (command == "MOTOR REVERSE") {
-    motorReverse();
-    Serial.println("Motor läuft rückwärts.");
+    controlMotor(false);
   } else if (command == "MOTOR STOP") {
-    motorStop();
-    Serial.println("Motor gestoppt.");
-  } else {
-    Serial.println("Unbekannter Befehl.");
+    controlMotor(false, LOW);
   }
 }
 
-void moveXY(float xTarget, float yTarget) {
-  enableMotors(); // Aktiviere Motoren vor der Bewegung
+void moveAxis(int axisIndex, float target) {
+  enableMotors();
 
-  if (xTarget < 0) xTarget = 0;
-  if (xTarget > X_MAX_POS) xTarget = X_MAX_POS;
-  if (yTarget < 0) yTarget = 0;
-  if (yTarget > Y_MAX_POS) yTarget = Y_MAX_POS;
+  float maxPos[] = {X_MAX_POS, Y_MAX_POS, Z_MAX_POS, E0_MAX_POS, E1_MAX_POS};
+  if (target > maxPos[axisIndex]) target = maxPos[axisIndex];
 
-  long xSteps = (xTarget - currentX) * stepsPerMM;
-  long ySteps = (yTarget - currentY) * stepsPerMM;
+  long steps = (target - getCurrentPosition(axisIndex)) * stepsPerMM;
 
-  moveLinear(X_STEP_PIN, X_DIR_PIN, xSteps, Y_STEP_PIN, Y_DIR_PIN, ySteps);
+  axes[axisIndex].stepsRemaining = abs(steps);
+  axes[axisIndex].direction = steps >= 0;
 
-  currentX = xTarget;
-  currentY = yTarget;
+  setCurrentPosition(axisIndex, target);
 
-  lastMovementTime = millis(); // Aktualisiere die Zeit des letzten Bewegungsbefehls
-
-  Serial.println("Bewegung XY abgeschlossen.");
+  lastMovementTime = millis();
 }
 
-void moveZE0(float zTarget, float e0Target) {
-  enableMotors(); // Aktiviere Motoren vor der Bewegung
-
-  if (zTarget < 0) zTarget = 0;
-  if (zTarget > Z_MAX_POS) zTarget = Z_MAX_POS;
-  if (e0Target < 0) e0Target = 0;
-  if (e0Target > E0_MAX_POS) e0Target = E0_MAX_POS;
-
-  long zSteps = (zTarget - currentZ) * stepsPerMM;
-  long e0Steps = (e0Target - currentE0) * stepsPerMM;
-
-  moveLinear(Z_STEP_PIN, Z_DIR_PIN, zSteps, E0_STEP_PIN, E0_DIR_PIN, e0Steps);
-
-  currentZ = zTarget;
-  currentE0 = e0Target;
-
-  lastMovementTime = millis(); // Aktualisiere die Zeit des letzten Bewegungsbefehls
-
-  Serial.println("Bewegung ZE0 abgeschlossen.");
-}
-
-void moveE1(float e1Target) {
-  enableMotors(); // Aktiviere Motoren vor der Bewegung
-
-  if (e1Target < 0) e1Target = 0;
-  if (e1Target > E1_MAX_POS) e1Target = E1_MAX_POS;
-
-  long e1Steps = (e1Target - currentE1) * stepsPerMM;
-
-  moveAxis(E1_STEP_PIN, E1_DIR_PIN, e1Steps);
-
-  currentE1 = e1Target;
-
-  lastMovementTime = millis(); // Aktualisiere die Zeit des letzten Bewegungsbefehls
-
-  Serial.println("Bewegung E1 abgeschlossen.");
-}
-
-void moveAxis(int stepPin, int dirPin, long steps) {
-  bool dir = steps >= 0;
-  digitalWrite(dirPin, dir ? HIGH : LOW);
-  steps = abs(steps);
-
-  unsigned long stepDelay = 1000000 / maxSpeed;  // Verzögerung zwischen Schritten in Mikrosekunden
-
-  for (long i = 0; i < steps; i++) {
-    stepMotor(stepPin);
-    delayMicroseconds(stepDelay);  // Geschwindigkeit anpassen
+float getCurrentPosition(int axisIndex) {
+  switch (axisIndex) {
+    case 0: return currentX;
+    case 1: return currentY;
+    case 2: return currentZ;
+    case 3: return currentE0;
+    case 4: return currentE1;
+    default: return 0;
   }
 }
 
-void moveLinear(int stepPin1, int dirPin1, long steps1, int stepPin2, int dirPin2, long steps2) {
-  bool dir1 = steps1 >= 0;
-  bool dir2 = steps2 >= 0;
-  digitalWrite(dirPin1, dir1 ? HIGH : LOW);
-  digitalWrite(dirPin2, dir2 ? HIGH : LOW);
-  steps1 = abs(steps1);
-  steps2 = abs(steps2);
+void setCurrentPosition(int axisIndex, float position) {
+  switch (axisIndex) {
+    case 0: currentX = position; break;
+    case 1: currentY = position; break;
+    case 2: currentZ = position; break;
+    case 3: currentE0 = position; break;
+    case 4: currentE1 = position; break;
+  }
+}
 
-  long maxSteps = max(steps1, steps2);
-  unsigned long stepDelay = 1000000 / maxSpeed;  // Verzögerung zwischen Schritten in Mikrosekunden
+void performConcurrentMovements() {
+  unsigned long currentTime = micros();
+  for (int i = 0; i < 5; i++) {
+    if (axes[i].stepsRemaining > 0 && (currentTime - axes[i].lastStepTime >= stepDelay)) {
+      digitalWrite(axes[i].dirPin, axes[i].direction ? HIGH : LOW);
+      stepMotor(axes[i].stepPin);
+      axes[i].stepsRemaining--;
+      axes[i].lastStepTime = currentTime;
 
-  for (long i = 0; i < maxSteps; i++) {
-    if (i < steps1) {
-      stepMotor(stepPin1);
+      // Print information about the last step
+      if (axes[i].stepsRemaining == 0) {
+        Serial.print("Achse ");
+        Serial.print(i);
+        Serial.println(" hat seine Bewegung beendet.");
+      }
     }
-    if (i < steps2) {
-      stepMotor(stepPin2);
-    }
-    delayMicroseconds(stepDelay);  // Geschwindigkeit anpassen
   }
 }
 
@@ -325,7 +230,6 @@ void stepMotor(int stepPin) {
   digitalWrite(stepPin, LOW);
 }
 
-// Funktionen zum Aktivieren und Deaktivieren der Motoren
 void enableMotors() {
   if (!motorsEnabled) {
     digitalWrite(X_ENABLE_PIN, LOW);
@@ -350,18 +254,12 @@ void disableMotors() {
   }
 }
 
-// Funktionen zur Steuerung des DC-Motors
-void motorForward() {
-  digitalWrite(MOTOR_IN1_PIN, HIGH);
-  digitalWrite(MOTOR_IN2_PIN, LOW);
-}
-
-void motorReverse() {
-  digitalWrite(MOTOR_IN1_PIN, LOW);
-  digitalWrite(MOTOR_IN2_PIN, HIGH);
-}
-
-void motorStop() {
-  digitalWrite(MOTOR_IN1_PIN, LOW);
-  digitalWrite(MOTOR_IN2_PIN, LOW);
+void controlMotor(bool forward, int lowOnStop = HIGH) {
+  if (lowOnStop == LOW) {
+    Serial.println("DC Motor gestoppt");
+  } else {
+    Serial.println(forward ? "DC Motor vorwärts" : "DC Motor rückwärts");
+  }
+  digitalWrite(MOTOR_IN1_PIN, forward ? lowOnStop : LOW);
+  digitalWrite(MOTOR_IN2_PIN, forward ? LOW : lowOnStop );
 }
