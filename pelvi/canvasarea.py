@@ -11,6 +11,7 @@ class CanvasArea:
         self.point = None
         self.axis1 = axis1
         self.axis2 = axis2
+        self.has_blocked_area = (self.axis1 == "X" and self.axis2 == "Y")
 
     @classmethod
     def create_canvas_area(cls, parent, pelvi, axis1, axis2, width, height, background_image, row, column):
@@ -78,7 +79,7 @@ class CanvasArea:
             self.move_to(self.pelvi.get_axis_value(self.axis1), self.pelvi.get_axis_value(self.axis2))
 
     def move_to(self, x, y):
-        if self.axis1 == "X" and self.axis2 == "Y" and self.is_point_inside_rectangle(x, y):
+        if self.has_blocked_area and self.is_point_inside_rectangle(x, y):
             print("Bewegung in den roten Bereich ist nicht erlaubt.")
             return False
         self.pelvi.move_axis_to(self.axis1, x)
@@ -90,7 +91,7 @@ class CanvasArea:
         return ((self.pelvi.get_blocked_area("X")[0] <= x_mm <= self.pelvi.get_blocked_area("X")[1])
                 and (self.pelvi.get_blocked_area("Y")[0] <= y_mm <= self.pelvi.get_blocked_area("Y")[1]))
 
-    def is_inside_rectangle(self, left, top, right, bottom):
+    def is_rectangle_on_point(self, left, top, right, bottom):
         points = [(self.pelvi.get_axis_value("X"), self.pelvi.get_axis_value("Y"))]
         for x, y in points:
             if left <= x <= right and top <= y <= bottom:
@@ -119,7 +120,7 @@ class CanvasArea:
             new_bottom = self.pelvi.get_axis_range("Y")
             new_top = self.pelvi.get_axis_range("Y") - (rectangle_bottom - rectangle_top)
 
-        if self.is_inside_rectangle(new_left, new_top, new_right, new_bottom):
+        if self.is_rectangle_on_point(new_left, new_top, new_right, new_bottom):
             print("Blockierte Position kann nicht auf den aktuellen Punkt verschoben werden.")
             return
 

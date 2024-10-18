@@ -32,7 +32,8 @@ def create_save_button(canvas_frame):
     btn_save = ttk.Button(canvas_frame, text="Save", command=save_data)
     btn_save.grid(row=3, column=2, padx=3, pady=5)
 
-def create_xy_buttons(_canvas_xy, frame_xy):
+def create_xy_buttons(_canvas_xy, _canvas_frame):
+    frame_xy = ttk.Frame(_canvas_frame)
     frame_xy.grid(row=1, column=0, padx=4, pady=5)
     button_frame_xy = ttk.Frame(frame_xy)
     button_frame_xy.grid(pady=5)
@@ -67,7 +68,8 @@ def create_xy_buttons(_canvas_xy, frame_xy):
 
     return _canvas_xy
 
-def create_ze0_buttons(_canvas_ze0, frame_ze0):
+def create_ze0_buttons(_canvas_ze0, _canvas_frame):
+    frame_ze0 = ttk.Frame(_canvas_frame)
     frame_ze0.grid(row=1, column=1, padx=10, pady=10)
     button_frame_ze0 = ttk.Frame(frame_ze0)
     button_frame_ze0.grid(pady=5)
@@ -83,7 +85,8 @@ def create_ze0_buttons(_canvas_ze0, frame_ze0):
 
     return _canvas_ze0
 
-def create_e1_buttons(_canvas_e1, frame_e1):
+def create_e1_buttons(_canvas_e1, _canvas_frame):
+    frame_e1 = ttk.Frame(_canvas_frame)
     frame_e1.grid(row=1, column=2, padx=10, pady=10)
     button_frame_e1 = ttk.Frame(frame_e1)
     button_frame_e1.grid(pady=5)
