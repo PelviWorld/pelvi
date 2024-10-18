@@ -75,7 +75,9 @@ def update_point_e1():
     point_e1 = canvas_e1.create_oval(45, e1_pixel - 5, 55, e1_pixel + 5, fill='blue')
 
 def adjust_blocked_position(dx=0, dy=0):
-    global rectangle_left, rectangle_top, rectangle_right, rectangle_bottom
+    # Get current rectangle coordinates from pelvi
+    rectangle_left, rectangle_right = pelvi.get_blocked_area("X")
+    rectangle_top, rectangle_bottom = pelvi.get_blocked_area("Y")
 
     # Calculate new positions
     new_left = rectangle_left + dx
@@ -97,19 +99,16 @@ def adjust_blocked_position(dx=0, dy=0):
         new_bottom = pelvi.get_axis_range("Y")
         new_top = pelvi.get_axis_range("Y") - (rectangle_bottom - rectangle_top)
 
-    # Update global variables
-    rectangle_left = new_left
-    rectangle_top = new_top
-    rectangle_right = new_right
-    rectangle_bottom = new_bottom
-
-    pelvi.update_blocked_area("X", rectangle_left, rectangle_right)
-    pelvi.update_blocked_area("Y", rectangle_top, rectangle_bottom)
+    # Update pelvi blocked area data
+    pelvi.update_blocked_area("X", new_left, new_right)
+    pelvi.update_blocked_area("Y", new_top, new_bottom)
 
     update_red_rectangle(canvas_xy)
 
 def update_red_rectangle(_canvas_xy):
-    global rectangle_left, rectangle_top, rectangle_right, rectangle_bottom
+    # Get current rectangle coordinates from pelvi
+    rectangle_left, rectangle_right = pelvi.get_blocked_area("X")
+    rectangle_top, rectangle_bottom = pelvi.get_blocked_area("Y")
 
     if _canvas_xy:
         _canvas_xy.delete('red_rectangle')
@@ -280,14 +279,6 @@ if __name__ == '__main__':
     canvas_width_ze0 = pelvi.get_axis_range("Z")
     canvas_height_ze0 = pelvi.get_axis_range("E0")
     canvas_height_e1 = pelvi.get_axis_range("E1")
-    rectangle_left = pelvi.get_blocked_area("X")[0]
-    print(rectangle_left)
-    rectangle_right = pelvi.get_blocked_area("X")[1]
-    print(rectangle_right)
-    rectangle_top = pelvi.get_blocked_area("Y")[0]
-    print(rectangle_top)
-    rectangle_bottom = pelvi.get_blocked_area("Y")[1]
-    print(rectangle_bottom)
 
     # Set global variables to values
     canvas_width_e1 = 100
