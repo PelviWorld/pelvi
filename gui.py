@@ -8,22 +8,6 @@ from pelvi.canvasarea import CanvasArea
 arduino_port = 'COM7'
 arduino_baudrate = 115200
 
-def click_canvas_xy(event):
-    x = event.x
-    y = event.y
-
-    # Check if the clicked position is within the canvas boundaries
-    if x < 0 or x > canvas_width_xy or y < 0 or y > canvas_height_xy:
-        print("Klick außerhalb der Leinwand")
-        return
-    canvas_xy.move_to(x, y)
-
-def click_canvas_ze0(event):
-    canvas_ze0.move_to(event.x, event.y)
-
-def click_canvas_e1(event):
-    canvas_e1.move_to(event.x, event.y)
-
 def is_point_inside_rectangle(left, top, right, bottom):
     points = [(pelvi.get_axis_value("X"), pelvi.get_axis_value("Y"))]
     for x, y in points:
@@ -184,7 +168,7 @@ def create_canvas_areas():
 
     canvas_xy = CanvasArea(
         canvas_frame, pelvi, "X", "Y", canvas_width_xy, canvas_height_xy,
-        'background_xy.png', click_canvas_xy
+        'background_xy.png'
     )
     canvas_xy.create_axes_lines(0, 0)
     canvas_xy.canvas.grid(row=0, column=0, padx=4, pady=5)
@@ -192,7 +176,7 @@ def create_canvas_areas():
 
     canvas_ze0 = CanvasArea(
         canvas_frame, pelvi, "Z", "E0", canvas_width_ze0, canvas_height_ze0,
-        'background_ze0.png', click_canvas_ze0
+        'background_ze0.png'
     )
     canvas_ze0.create_axes_lines(0, 0)
     canvas_ze0.canvas.grid(row=0, column=1, padx=4, pady=5)
@@ -200,7 +184,7 @@ def create_canvas_areas():
 
     canvas_e1 = CanvasArea(
         canvas_frame, pelvi,"E1", "E1", canvas_width_e1, canvas_height_e1,
-        'background_e1.png', click_canvas_e1
+        'background_e1.png'
     )
     canvas_e1.create_axes_lines(50, 0)
     canvas_e1.canvas.grid(row=0, column=2, padx=4, pady=5)

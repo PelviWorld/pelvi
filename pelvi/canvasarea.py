@@ -2,15 +2,24 @@ import tkinter as tk
 from pelvi.background import load_image_to_canvas
 
 class CanvasArea:
-    def __init__(self, parent, pelvi, axis1, axis2, width, height, background_image, click_callback):
+    def __init__(self, parent, pelvi, axis1, axis2, width, height, background_image):
         self.canvas = tk.Canvas(parent, width=width, height=height)
         load_image_to_canvas(self.canvas, background_image, width, height)
-        self.canvas.bind("<Button-1>", click_callback)
+        self.canvas.bind("<Button-1>", self.on_click_canvas)
         self.canvas.bind("<Configure>", self.on_resize)
         self.pelvi = pelvi
         self.point = None
         self.axis1 = axis1
         self.axis2 = axis2
+
+    def on_click_canvas(self, event):
+        x = event.x
+        y = event.y
+
+        if x < 0 or x > self.canvas.winfo_width() or y < 0 or y > self.canvas.winfo_height():
+            print("Click outside the canvas")
+            return
+        self.move_to(x, y)
 
     def on_resize(self, event):
         self.update_point()
