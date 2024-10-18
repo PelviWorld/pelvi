@@ -37,7 +37,7 @@ def update_point_xy():
     point_xy = canvas_xy.create_oval(x_pixel - 5, y_pixel - 5, x_pixel + 5, y_pixel + 5, fill='blue')
 
 def is_inside_rectangle(x_mm, y_mm):
-    return (rect_top_left_x_mm <= x_mm <= rect_bottom_right_x_mm) and (rect_top_left_y_mm <= y_mm <= rect_bottom_right_y_mm)
+    return (rectangle_left <= x_mm <= rectangle_right) and (rectangle_top <= y_mm <= rectangle_bottom)
 
 def move_to_ze0(z, e0):
     pelvi.move_axis_to("Z", z)
@@ -75,47 +75,50 @@ def update_point_e1():
     point_e1 = canvas_e1.create_oval(45, e1_pixel - 5, 55, e1_pixel + 5, fill='blue')
 
 def adjust_blocked_position(dx=0, dy=0):
-    global rect_top_left_x_mm, rect_top_left_y_mm, rect_bottom_right_x_mm, rect_bottom_right_y_mm
+    global rectangle_left, rectangle_top, rectangle_right, rectangle_bottom
 
     # Calculate new positions
-    new_top_left_x = rect_top_left_x_mm + dx
-    new_top_left_y = rect_top_left_y_mm + dy
-    new_bottom_right_x = rect_bottom_right_x_mm + dx
-    new_bottom_right_y = rect_bottom_right_y_mm + dy
+    new_left = rectangle_left + dx
+    new_top = rectangle_top + dy
+    new_right = rectangle_right + dx
+    new_bottom = rectangle_bottom + dy
 
     # Ensure the rectangle stays within the canvas boundaries
-    if new_top_left_x < 0:
-        new_top_left_x = 0
-        new_bottom_right_x = rect_bottom_right_x_mm - rect_top_left_x_mm
-    if new_top_left_y < 0:
-        new_top_left_y = 0
-        new_bottom_right_y = rect_bottom_right_y_mm - rect_top_left_y_mm
-    if new_bottom_right_x > pelvi.get_axis_range("X"):
-        new_bottom_right_x = pelvi.get_axis_range("X")
-        new_top_left_x = pelvi.get_axis_range("X") - (rect_bottom_right_x_mm - rect_top_left_x_mm)
-    if new_bottom_right_y > pelvi.get_axis_range("Y"):
-        new_bottom_right_y = pelvi.get_axis_range("Y")
-        new_top_left_y = pelvi.get_axis_range("Y") - (rect_bottom_right_y_mm - rect_top_left_y_mm)
+    if new_left < 0:
+        new_left = 0
+        new_right = rectangle_right - rectangle_left
+    if new_top < 0:
+        new_top = 0
+        new_bottom = rectangle_bottom - rectangle_top
+    if new_right > pelvi.get_axis_range("X"):
+        new_right = pelvi.get_axis_range("X")
+        new_left = pelvi.get_axis_range("X") - (rectangle_right - rectangle_left)
+    if new_bottom > pelvi.get_axis_range("Y"):
+        new_bottom = pelvi.get_axis_range("Y")
+        new_top = pelvi.get_axis_range("Y") - (rectangle_bottom - rectangle_top)
 
     # Update global variables
-    rect_top_left_x_mm = new_top_left_x
-    rect_top_left_y_mm = new_top_left_y
-    rect_bottom_right_x_mm = new_bottom_right_x
-    rect_bottom_right_y_mm = new_bottom_right_y
+    rectangle_left = new_left
+    rectangle_top = new_top
+    rectangle_right = new_right
+    rectangle_bottom = new_bottom
+
+    pelvi.update_blocked_area("X", rectangle_left, rectangle_right)
+    pelvi.update_blocked_area("Y", rectangle_top, rectangle_bottom)
 
     update_red_rectangle(canvas_xy)
 
 def update_red_rectangle(_canvas_xy):
-    global rect_top_left_x_mm, rect_top_left_y_mm, rect_bottom_right_x_mm, rect_bottom_right_y_mm
+    global rectangle_left, rectangle_top, rectangle_right, rectangle_bottom
 
     if _canvas_xy:
         _canvas_xy.delete('red_rectangle')
 
     _canvas_xy.create_rectangle(
-        rect_top_left_x_mm,
-        rect_top_left_y_mm,
-        rect_bottom_right_x_mm,
-        rect_bottom_right_y_mm,
+        rectangle_left,
+        rectangle_top,
+        rectangle_right,
+        rectangle_bottom,
         fill='red',
         outline='',
         tags='red_rectangle'
@@ -277,14 +280,14 @@ if __name__ == '__main__':
     canvas_width_ze0 = pelvi.get_axis_range("Z")
     canvas_height_ze0 = pelvi.get_axis_range("E0")
     canvas_height_e1 = pelvi.get_axis_range("E1")
-    rect_top_left_x_mm = pelvi.get_blocked_area("X")[0]
-    print(rect_top_left_x_mm)
-    rect_bottom_right_x_mm = pelvi.get_blocked_area("X")[1]
-    print(rect_bottom_right_x_mm)
-    rect_top_left_y_mm = pelvi.get_blocked_area("Y")[0]
-    print(rect_top_left_y_mm)
-    rect_bottom_right_y_mm = pelvi.get_blocked_area("Y")[1]
-    print(rect_bottom_right_y_mm)
+    rectangle_left = pelvi.get_blocked_area("X")[0]
+    print(rectangle_left)
+    rectangle_right = pelvi.get_blocked_area("X")[1]
+    print(rectangle_right)
+    rectangle_top = pelvi.get_blocked_area("Y")[0]
+    print(rectangle_top)
+    rectangle_bottom = pelvi.get_blocked_area("Y")[1]
+    print(rectangle_bottom)
 
     # Set global variables to values
     canvas_width_e1 = 100
