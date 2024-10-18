@@ -8,49 +8,6 @@ from pelvi.canvasarea import CanvasArea
 arduino_port = 'COM7'
 arduino_baudrate = 115200
 
-def is_point_inside_rectangle(left, top, right, bottom):
-    points = [(pelvi.get_axis_value("X"), pelvi.get_axis_value("Y"))]
-    for x, y in points:
-        if left <= x <= right and top <= y <= bottom:
-            return True
-    return False
-
-def adjust_blocked_position(dx=0, dy=0):
-    # Get current rectangle coordinates from pelvi
-    rectangle_left, rectangle_right = pelvi.get_blocked_area("X")
-    rectangle_top, rectangle_bottom = pelvi.get_blocked_area("Y")
-
-    # Calculate new positions
-    new_left = rectangle_left + dx
-    new_top = rectangle_top + dy
-    new_right = rectangle_right + dx
-    new_bottom = rectangle_bottom + dy
-
-    # Ensure the rectangle stays within the canvas boundaries
-    if new_left < 0:
-        new_left = 0
-        new_right = rectangle_right - rectangle_left
-    if new_top < 0:
-        new_top = 0
-        new_bottom = rectangle_bottom - rectangle_top
-    if new_right > pelvi.get_axis_range("X"):
-        new_right = pelvi.get_axis_range("X")
-        new_left = pelvi.get_axis_range("X") - (rectangle_right - rectangle_left)
-    if new_bottom > pelvi.get_axis_range("Y"):
-        new_bottom = pelvi.get_axis_range("Y")
-        new_top = pelvi.get_axis_range("Y") - (rectangle_bottom - rectangle_top)
-
-    # Check if any point is within the new rectangle coordinates
-    if is_point_inside_rectangle(new_left, new_top, new_right, new_bottom):
-        print("Blockierte Position kann nicht auf den aktuellen Punkt verschoben werden.")
-        return
-
-    # Update pelvi blocked area data
-    pelvi.update_blocked_area("X", new_left, new_right)
-    pelvi.update_blocked_area("Y", new_top, new_bottom)
-
-    canvas_xy.update_red_rectangle()
-
 def motor_command(command):
     arduino.send_coordinates('MOTOR', command)
     print(f"DC Motor-Befehl: {command}")
@@ -75,8 +32,7 @@ def create_save_button(canvas_frame):
     btn_save = ttk.Button(canvas_frame, text="Save", command=save_data)
     btn_save.grid(row=3, column=2, padx=3, pady=5)
 
-def create_xy_buttons(_canvas_xy, _canvas_frame):
-    frame_xy = ttk.Frame(_canvas_frame)
+def create_xy_buttons(_canvas_xy, frame_xy):
     frame_xy.grid(row=1, column=0, padx=4, pady=5)
     button_frame_xy = ttk.Frame(frame_xy)
     button_frame_xy.grid(pady=5)
@@ -90,7 +46,7 @@ def create_xy_buttons(_canvas_xy, _canvas_frame):
     btn_y_negative = ttk.Button(button_frame_xy, text='↑', command=lambda: _canvas_xy.move_by("Y", -10), width=3)
     btn_y_negative.grid(row=1, column=1, padx=2, pady=2)
 
-    canvas_xy.update_red_rectangle()
+    _canvas_xy.update_red_rectangle()
 
     frame_rectangle = ttk.Frame(frame_xy)
     frame_rectangle.grid(pady=3)
@@ -100,19 +56,18 @@ def create_xy_buttons(_canvas_xy, _canvas_frame):
     button_frame_rectangle = ttk.Frame(frame_rectangle)
     button_frame_rectangle.grid(row=1, column=0, columnspan=2)
 
-    btn_rectangle_x_negative = ttk.Button(button_frame_rectangle, text='←', command=lambda: adjust_blocked_position(-10, 0), width=3)
+    btn_rectangle_x_negative = ttk.Button(button_frame_rectangle, text='←', command=lambda: _canvas_xy.adjust_blocked_position(-10, 0), width=3)
     btn_rectangle_x_negative.grid(row=0, column=0, padx=2, pady=2)
-    btn_rectangle_x_positive = ttk.Button(button_frame_rectangle, text='→', command=lambda: adjust_blocked_position(10, 0), width=3)
+    btn_rectangle_x_positive = ttk.Button(button_frame_rectangle, text='→', command=lambda: _canvas_xy.adjust_blocked_position(10, 0), width=3)
     btn_rectangle_x_positive.grid(row=0, column=1, padx=2, pady=2)
-    btn_rectangle_y_positive = ttk.Button(button_frame_rectangle, text='↓', command=lambda: adjust_blocked_position(0, 10), width=3)
+    btn_rectangle_y_positive = ttk.Button(button_frame_rectangle, text='↓', command=lambda: _canvas_xy.adjust_blocked_position(0, 10), width=3)
     btn_rectangle_y_positive.grid(row=1, column=0, padx=2, pady=2)
-    btn_rectangle_y_negative = ttk.Button(button_frame_rectangle, text='↑', command=lambda: adjust_blocked_position(0, -10), width=3)
+    btn_rectangle_y_negative = ttk.Button(button_frame_rectangle, text='↑', command=lambda: _canvas_xy.adjust_blocked_position(0, -10), width=3)
     btn_rectangle_y_negative.grid(row=1, column=1, padx=2, pady=2)
 
     return _canvas_xy
 
-def create_ze0_buttons(_canvas_ze0, _canvas_frame):
-    frame_ze0 = ttk.Frame(_canvas_frame)
+def create_ze0_buttons(_canvas_ze0, frame_ze0):
     frame_ze0.grid(row=1, column=1, padx=10, pady=10)
     button_frame_ze0 = ttk.Frame(frame_ze0)
     button_frame_ze0.grid(pady=5)
@@ -128,8 +83,7 @@ def create_ze0_buttons(_canvas_ze0, _canvas_frame):
 
     return _canvas_ze0
 
-def create_e1_buttons(_canvas_e1, _canvas_frame):
-    frame_e1 = ttk.Frame(_canvas_frame)
+def create_e1_buttons(_canvas_e1, frame_e1):
     frame_e1.grid(row=1, column=2, padx=10, pady=10)
     button_frame_e1 = ttk.Frame(frame_e1)
     button_frame_e1.grid(pady=5)

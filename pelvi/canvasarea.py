@@ -78,7 +78,7 @@ class CanvasArea:
             self.move_to(self.pelvi.get_axis_value(self.axis1), self.pelvi.get_axis_value(self.axis2))
 
     def move_to(self, x, y):
-        if self.axis1 == "X" and self.axis2 == "Y" and self.is_inside_rectangle(x, y):
+        if self.axis1 == "X" and self.axis2 == "Y" and self.is_point_inside_rectangle(x, y):
             print("Bewegung in den roten Bereich ist nicht erlaubt.")
             return False
         self.pelvi.move_axis_to(self.axis1, x)
@@ -86,6 +86,44 @@ class CanvasArea:
         self.update_point()
         return True
 
-    def is_inside_rectangle(self, x_mm, y_mm):
+    def is_point_inside_rectangle(self, x_mm, y_mm):
         return ((self.pelvi.get_blocked_area("X")[0] <= x_mm <= self.pelvi.get_blocked_area("X")[1])
                 and (self.pelvi.get_blocked_area("Y")[0] <= y_mm <= self.pelvi.get_blocked_area("Y")[1]))
+
+    def is_inside_rectangle(self, left, top, right, bottom):
+        points = [(self.pelvi.get_axis_value("X"), self.pelvi.get_axis_value("Y"))]
+        for x, y in points:
+            if left <= x <= right and top <= y <= bottom:
+                return True
+        return False
+
+    def adjust_blocked_position(self, dx=0, dy=0):
+        rectangle_left, rectangle_right = self.pelvi.get_blocked_area("X")
+        rectangle_top, rectangle_bottom = self.pelvi.get_blocked_area("Y")
+
+        new_left = rectangle_left + dx
+        new_top = rectangle_top + dy
+        new_right = rectangle_right + dx
+        new_bottom = rectangle_bottom + dy
+
+        if new_left < 0:
+            new_left = 0
+            new_right = rectangle_right - rectangle_left
+        if new_top < 0:
+            new_top = 0
+            new_bottom = rectangle_bottom - rectangle_top
+        if new_right > self.pelvi.get_axis_range("X"):
+            new_right = self.pelvi.get_axis_range("X")
+            new_left = self.pelvi.get_axis_range("X") - (rectangle_right - rectangle_left)
+        if new_bottom > self.pelvi.get_axis_range("Y"):
+            new_bottom = self.pelvi.get_axis_range("Y")
+            new_top = self.pelvi.get_axis_range("Y") - (rectangle_bottom - rectangle_top)
+
+        if self.is_inside_rectangle(new_left, new_top, new_right, new_bottom):
+            print("Blockierte Position kann nicht auf den aktuellen Punkt verschoben werden.")
+            return
+
+        self.pelvi.update_blocked_area("X", new_left, new_right)
+        self.pelvi.update_blocked_area("Y", new_top, new_bottom)
+
+        self.update_red_rectangle()
