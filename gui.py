@@ -37,7 +37,8 @@ def update_point_xy():
     point_xy = canvas_xy.create_oval(x_pixel - 5, y_pixel - 5, x_pixel + 5, y_pixel + 5, fill='blue')
 
 def is_inside_rectangle(x_mm, y_mm):
-    return (rectangle_left <= x_mm <= rectangle_right) and (rectangle_top <= y_mm <= rectangle_bottom)
+    return ((pelvi.get_blocked_area("X")[0] <= x_mm <= pelvi.get_blocked_area("X")[1])
+            and (pelvi.get_blocked_area("Y")[0] <= y_mm <= pelvi.get_blocked_area("Y")[1]))
 
 def move_to_ze0(z, e0):
     pelvi.move_axis_to("Z", z)
@@ -74,6 +75,13 @@ def update_point_e1():
         canvas_e1.delete(point_e1)
     point_e1 = canvas_e1.create_oval(45, e1_pixel - 5, 55, e1_pixel + 5, fill='blue')
 
+def is_point_inside_rectangle(left, top, right, bottom):
+    points = [(pelvi.get_axis_value("X"), pelvi.get_axis_value("Y"))]
+    for x, y in points:
+        if left <= x <= right and top <= y <= bottom:
+            return True
+    return False
+
 def adjust_blocked_position(dx=0, dy=0):
     # Get current rectangle coordinates from pelvi
     rectangle_left, rectangle_right = pelvi.get_blocked_area("X")
@@ -98,6 +106,11 @@ def adjust_blocked_position(dx=0, dy=0):
     if new_bottom > pelvi.get_axis_range("Y"):
         new_bottom = pelvi.get_axis_range("Y")
         new_top = pelvi.get_axis_range("Y") - (rectangle_bottom - rectangle_top)
+
+    # Check if any point is within the new rectangle coordinates
+    if is_point_inside_rectangle(new_left, new_top, new_right, new_bottom):
+        print("Blockierte Position kann nicht auf den aktuellen Punkt verschoben werden.")
+        return
 
     # Update pelvi blocked area data
     pelvi.update_blocked_area("X", new_left, new_right)
