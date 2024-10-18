@@ -139,6 +139,11 @@ class Pelvi:
                 return blocked.minvalue, blocked.maxvalue
         return None
 
+    def update_blocked_area(self, axis, minvalue, maxvalue):
+        for blocked in self.blocked_list:
+            if self.__axis_name_for_axis_id(blocked.axis) == axis:
+                blocked.minvalue = minvalue
+                blocked.maxvalue = maxvalue
 
 if __name__ == '__main__':
     pelvi = Pelvi()
