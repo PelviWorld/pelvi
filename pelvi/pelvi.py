@@ -126,6 +126,19 @@ class Pelvi:
         minimum, maximum = self.__get_range(axis)
         return maximum - minimum
 
+    def __axis_name_for_axis_id(self, axis_id):
+        for device in self.__device_list:
+            for axis in device.axislist:
+                if axis.axisid == axis_id:
+                    return axis.axisname
+        return None
+
+    def get_blocked_area(self, axis):
+        for blocked in self.blocked_list:
+            if self.__axis_name_for_axis_id(blocked.axis) == axis:
+                return blocked.minvalue, blocked.maxvalue
+        return None
+
 
 if __name__ == '__main__':
     pelvi = Pelvi()
