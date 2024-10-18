@@ -59,7 +59,7 @@ def save_data():
     pelvi.save_user_data()
     print("Data saved")
 
-def create_dc_motor_gui(canvas_frame):
+def create_dc_motor_buttons(canvas_frame):
     frame_motor = ttk.Frame(canvas_frame)
     frame_motor.grid(row=3, column=0, pady=10)
     label_motor = ttk.Label(frame_motor, text="DC-Motor-Steuerung")
@@ -71,11 +71,11 @@ def create_dc_motor_gui(canvas_frame):
     btn_motor_forward = ttk.Button(frame_motor, text="Motor Rückwärts", command=lambda: motor_command('MOTOR REVERSE'))
     btn_motor_forward.grid(row=4, column=1, padx=3)
 
-def create_save_button_gui(canvas_frame):
+def create_save_button(canvas_frame):
     btn_save = ttk.Button(canvas_frame, text="Save", command=save_data)
     btn_save.grid(row=3, column=2, padx=3, pady=5)
 
-def create_xy_frame(_canvas_xy, _canvas_frame):
+def create_xy_buttons(_canvas_xy, _canvas_frame):
     frame_xy = ttk.Frame(_canvas_frame)
     frame_xy.grid(row=1, column=0, padx=4, pady=5)
     button_frame_xy = ttk.Frame(frame_xy)
@@ -111,7 +111,7 @@ def create_xy_frame(_canvas_xy, _canvas_frame):
 
     return _canvas_xy
 
-def create_ze0_frame(_canvas_ze0, _canvas_frame):
+def create_ze0_buttons(_canvas_ze0, _canvas_frame):
     frame_ze0 = ttk.Frame(_canvas_frame)
     frame_ze0.grid(row=1, column=1, padx=10, pady=10)
     button_frame_ze0 = ttk.Frame(frame_ze0)
@@ -128,7 +128,7 @@ def create_ze0_frame(_canvas_ze0, _canvas_frame):
 
     return _canvas_ze0
 
-def create_e1_frame(_canvas_e1, _canvas_frame):
+def create_e1_buttons(_canvas_e1, _canvas_frame):
     frame_e1 = ttk.Frame(_canvas_frame)
     frame_e1.grid(row=1, column=2, padx=10, pady=10)
     button_frame_e1 = ttk.Frame(frame_e1)
@@ -141,37 +141,34 @@ def create_e1_frame(_canvas_e1, _canvas_frame):
 
     return _canvas_e1
 
-def create_canvas_frame(_root):
-    _canvas_frame = ttk.Frame(_root)
-    _canvas_frame.pack(side=tk.TOP, padx=4, pady=5)
-    return _canvas_frame
-
 def create_canvas_areas():
     global canvas_xy, canvas_ze0, canvas_e1
 
     canvas_frame = ttk.Frame(root)
+    canvas_frame.pack(side=tk.TOP, padx=4, pady=5)
     canvas_frame.grid(row=0, column=0, padx=4, pady=5)
 
     canvas_xy = CanvasArea.create_canvas_area(
         canvas_frame, pelvi, "X", "Y", pelvi.get_axis_range("X"), pelvi.get_axis_range("Y"),
         'background_xy.png', 0, 0
     )
-    create_xy_frame(canvas_xy, canvas_frame)
 
     canvas_ze0 = CanvasArea.create_canvas_area(
         canvas_frame, pelvi, "Z", "E0", pelvi.get_axis_range("Z"), pelvi.get_axis_range("E0"),
         'background_ze0.png', 0, 1
     )
-    create_ze0_frame(canvas_ze0, canvas_frame)
 
     canvas_e1 = CanvasArea.create_canvas_area(
         canvas_frame, pelvi, "E1", "E1", 100, pelvi.get_axis_range("E1"),
         'background_e1.png', 0, 2
     )
-    create_e1_frame(canvas_e1, canvas_frame)
 
-    create_dc_motor_gui(canvas_frame)
-    create_save_button_gui(canvas_frame)
+    create_xy_buttons(canvas_xy, canvas_frame)
+    create_ze0_buttons(canvas_ze0, canvas_frame)
+    create_e1_buttons(canvas_e1, canvas_frame)
+
+    create_dc_motor_buttons(canvas_frame)
+    create_save_button(canvas_frame)
 
 def create_main_window():
     _root = tk.Tk()
