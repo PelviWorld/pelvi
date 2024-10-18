@@ -14,6 +14,6 @@ def load_image_to_canvas(canvas, image_path, width, height):
             canvas.create_image(0, 0, image=bg, anchor='nw')
             canvas.image = bg  # Keep a reference to avoid garbage collection
         except Exception as e:
-            print(f"Konnte das Imgae {image_path} nicht laden: {e}")
+            print(f"Konnte das Bild {image_path} nicht laden: {e}")
     else:
         print("Pillow ist nicht installiert. Kein Hintergundbild für die Leinwand möglich.")
