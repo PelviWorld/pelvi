@@ -98,8 +98,8 @@ def create_database(connection):
     # block default back area for heart
     cursor.execute("""INSERT INTO blockedarea (userid) VALUES(?)""", (defaultuser,))
     blockedarea = cursor.lastrowid
-    cursor.execute("""INSERT INTO blockedvalue (blockedareaid, axisid, minvalue, maxvalue) VALUES(?,?,?,?)""", (blockedarea, axisx, 350, 1000))
-    cursor.execute("""INSERT INTO blockedvalue (blockedareaid, axisid, minvalue, maxvalue) VALUES(?,?,?,?)""", (blockedarea, axisy, 200, 500))
+    cursor.execute("""INSERT INTO blockedvalue (blockedareaid, axisid, minvalue, maxvalue) VALUES(?,?,?,?)""", (blockedarea, axisx, 200, 300))
+    cursor.execute("""INSERT INTO blockedvalue (blockedareaid, axisid, minvalue, maxvalue) VALUES(?,?,?,?)""", (blockedarea, axisy, 50, 150))
 
     # set all axis to be on refvalue for default user
     cursor.execute("""INSERT INTO positions (userid, positionnumber, duration) VALUES(?,?,?)""", (defaultuser,10,0))
