@@ -152,32 +152,25 @@ def create_canvas_areas():
     canvas_frame = ttk.Frame(root)
     canvas_frame.grid(row=0, column=0, padx=4, pady=5)
 
-    canvas_xy = CanvasArea(
-        canvas_frame, pelvi, "X", "Y", canvas_width_xy, canvas_height_xy,
-        'background_xy.png'
+    canvas_xy = CanvasArea.create_canvas_area(
+        canvas_frame, pelvi, "X", "Y", pelvi.get_axis_range("X"), pelvi.get_axis_range("Y"),
+        'background_xy.png', 0, 0
     )
-    canvas_xy.create_axes_lines(0, 0)
-    canvas_xy.canvas.grid(row=0, column=0, padx=4, pady=5)
     create_xy_frame(canvas_xy, canvas_frame)
 
-    canvas_ze0 = CanvasArea(
-        canvas_frame, pelvi, "Z", "E0", canvas_width_ze0, canvas_height_ze0,
-        'background_ze0.png'
+    canvas_ze0 = CanvasArea.create_canvas_area(
+        canvas_frame, pelvi, "Z", "E0", pelvi.get_axis_range("Z"), pelvi.get_axis_range("E0"),
+        'background_ze0.png', 0, 1
     )
-    canvas_ze0.create_axes_lines(0, 0)
-    canvas_ze0.canvas.grid(row=0, column=1, padx=4, pady=5)
     create_ze0_frame(canvas_ze0, canvas_frame)
 
-    canvas_e1 = CanvasArea(
-        canvas_frame, pelvi,"E1", "E1", canvas_width_e1, canvas_height_e1,
-        'background_e1.png'
+    canvas_e1 = CanvasArea.create_canvas_area(
+        canvas_frame, pelvi, "E1", "E1", 100, pelvi.get_axis_range("E1"),
+        'background_e1.png', 0, 2
     )
-    canvas_e1.create_axes_lines(50, 0)
-    canvas_e1.canvas.grid(row=0, column=2, padx=4, pady=5)
     create_e1_frame(canvas_e1, canvas_frame)
 
     create_dc_motor_gui(canvas_frame)
-
     create_save_button_gui(canvas_frame)
 
 def create_main_window():
@@ -193,21 +186,12 @@ if __name__ == '__main__':
     arduino = Arduino(arduino_port, arduino_baudrate)
 
     root = create_main_window()
-
-    # Canvas-Größen from pelvi db
-    canvas_width_xy = pelvi.get_axis_range("X")
-    canvas_height_xy = pelvi.get_axis_range("Y")
-    canvas_width_ze0 = pelvi.get_axis_range("Z")
-    canvas_height_ze0 = pelvi.get_axis_range("E0")
-    canvas_height_e1 = pelvi.get_axis_range("E1")
-
-    # Set global variables to values
-    canvas_width_e1 = 100
     create_canvas_areas()
 
     arduino.send_coordinates('XY', pelvi.get_axis_value("X"), pelvi.get_axis_value("Y"))
     arduino.send_coordinates('ZE0', pelvi.get_axis_value("Z"), pelvi.get_axis_value("E0"))
     arduino.send_coordinates('E1', pelvi.get_axis_value("E1"))
+
     canvas_xy.update_point()
     canvas_ze0.update_point()
     canvas_e1.update_point()
