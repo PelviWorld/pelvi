@@ -8,16 +8,6 @@ from pelvi.canvasarea import CanvasArea
 arduino_port = 'COM7'
 arduino_baudrate = 115200
 
-def move_to_xy(x, y):
-    if is_inside_rectangle(x, y):
-        print("Bewegung in den roten Bereich ist nicht erlaubt.")
-        return False
-    pelvi.move_axis_to("X", x)
-    pelvi.move_axis_to("Y", y)
-    arduino.send_coordinates('XY', pelvi.get_axis_value("X"), pelvi.get_axis_value("Y"))
-    canvas_xy.update_point()
-    return True
-
 def click_canvas_xy(event):
     x = event.x
     y = event.y
@@ -26,28 +16,13 @@ def click_canvas_xy(event):
     if x < 0 or x > canvas_width_xy or y < 0 or y > canvas_height_xy:
         print("Klick außerhalb der Leinwand")
         return
-    move_to_xy(x, y)
-
-def is_inside_rectangle(x_mm, y_mm):
-    return ((pelvi.get_blocked_area("X")[0] <= x_mm <= pelvi.get_blocked_area("X")[1])
-            and (pelvi.get_blocked_area("Y")[0] <= y_mm <= pelvi.get_blocked_area("Y")[1]))
-
-def move_to_ze0(z, e0):
-    pelvi.move_axis_to("Z", z)
-    pelvi.move_axis_to("E0", e0)
-    arduino.send_coordinates('ZE0', pelvi.get_axis_value("Z"), pelvi.get_axis_value("E0"))
-    canvas_ze0.update_point()
+    canvas_xy.move_to(x, y)
 
 def click_canvas_ze0(event):
-    move_to_ze0(event.x, event.y)
-
-def move_to_e1(e1):
-    pelvi.move_axis_to("E1", e1)
-    arduino.send_coordinates('E1', pelvi.get_axis_value("E1"))
-    canvas_e1.update_point()
+    canvas_ze0.move_to(event.x, event.y)
 
 def click_canvas_e1(event):
-    move_to_e1(event.y)
+    canvas_e1.move_to(event.x, event.y)
 
 def is_point_inside_rectangle(left, top, right, bottom):
     points = [(pelvi.get_axis_value("X"), pelvi.get_axis_value("Y"))]
@@ -95,12 +70,12 @@ def adjust_blocked_position(dx=0, dy=0):
 def move_by(axis, value):
     pelvi.move_axis_by(axis, value)
     if axis == 'X' or axis == 'Y':
-        if move_to_xy(pelvi.get_axis_value("X"), pelvi.get_axis_value("Y")) is False:
+        if canvas_xy.move_to(pelvi.get_axis_value("X"), pelvi.get_axis_value("Y")) is False:
             pelvi.move_axis_by(axis, -value)
     elif axis == 'Z' or axis == 'E0':
-        move_to_ze0(pelvi.get_axis_value("Z"), pelvi.get_axis_value("E0"))
+        canvas_ze0.move_to(pelvi.get_axis_value("Z"), pelvi.get_axis_value("E0"))
     elif axis == 'E1':
-        move_to_e1(pelvi.get_axis_value("E1"))
+        canvas_e1.move_to(0, pelvi.get_axis_value("E1"))
 
 def motor_command(command):
     arduino.send_coordinates('MOTOR', command)

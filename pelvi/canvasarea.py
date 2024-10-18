@@ -52,3 +52,16 @@ class CanvasArea:
             outline='',
             tags='red_rectangle'
         )
+
+    def move_to(self, x, y):
+        if self.axis1 == "X" and self.axis2 == "Y" and self.is_inside_rectangle(x, y):
+            print("Bewegung in den roten Bereich ist nicht erlaubt.")
+            return False
+        self.pelvi.move_axis_to(self.axis1, x)
+        self.pelvi.move_axis_to(self.axis2, y)
+        self.update_point()
+        return True
+
+    def is_inside_rectangle(self, x_mm, y_mm):
+        return ((self.pelvi.get_blocked_area("X")[0] <= x_mm <= self.pelvi.get_blocked_area("X")[1])
+                and (self.pelvi.get_blocked_area("Y")[0] <= y_mm <= self.pelvi.get_blocked_area("Y")[1]))
