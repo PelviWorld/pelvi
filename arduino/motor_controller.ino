@@ -39,12 +39,23 @@ const float Z_MAX_POS = 290.0;
 const float E0_MAX_POS = 180.0;
 const float E1_MAX_POS = 180.0;
 
+// Axis name to axis index map
+const std::map<String, int> axis_map = {
+    {"X", 0},
+    {"Y", 1},
+    {"Z", 2},
+    {"E0", 3},
+    {"E1", 4}
+};
+
 // Aktuelle Positionen
-float currentX = 0;
-float currentY = 0;
-float currentZ = 0;
-float currentE0 = 0;
-float currentE1 = 0;
+std::map<int, float> current_position = {
+    {0, 0.0},  // X
+    {1, 0.0},  // Y
+    {2, 0.0},  // Z
+    {3, 0.0},  // E0
+    {4, 0.0}   // E1
+};
 
 // Variablen für die Motoraktivierung
 unsigned long lastMovementTime = 0;
@@ -136,35 +147,35 @@ void homing() {
     }
   }
 
-  currentX = 0;
-  currentY = 0;
-  currentZ = 0;
-  currentE0 = 0;
-  currentE1 = 0;
+    // Set all axes to 0.0 after homing
+  for (int i = 0; i < 5; i++) {
+    setCurrentPosition(i, 0.0);
+  }
 
   Serial.println("Homing abgeschlossen.");
 }
 
 void processCommand(String command) {
-  if (command.startsWith("XY")) {
-    float xTarget = command.substring(2).toFloat();
-    float yTarget = command.substring(command.indexOf(' ') + 1).toFloat();
-    moveAxis(0, xTarget);
-    moveAxis(1, yTarget);
-  } else if (command.startsWith("ZE0")) {
-    float zTarget = command.substring(3).toFloat();
-    float e0Target = command.substring(command.indexOf(' ') + 1).toFloat();
-    moveAxis(2, zTarget);
-    moveAxis(3, e0Target);
-  } else if (command.startsWith("E1")) {
-    float e1Target = command.substring(2).toFloat();
-    moveAxis(4, e1Target);
-  } else if (command == "MOTOR FORWARD") {
-    controlMotor(true);
-  } else if (command == "MOTOR REVERSE") {
-    controlMotor(false);
-  } else if (command == "MOTOR STOP") {
-    controlMotor(false, LOW);
+  int spaceIndex = command.indexOf(' ');
+  String axis = command.substring(0, spaceIndex);
+  if (spaceIndex == -1)
+    return;
+
+  if (command.startsWith("MOTOR")) {
+    String direction = command.substring(spaceIndex + 1);
+    processMotorCommand(motorCommand);
+    return;
+  }
+    } else {
+      float value = command.substring(spaceIndex + 1).toFloat();
+      processAxisCommand(axis, value);
+    }
+}
+
+void processAxisCommand(String axis, float value) {
+  if (axis_map.find(axis) != axis_map.end()) {
+    int axisIndex = axis_map[axis];
+    moveAxis(axisIndex, value);
   }
 }
 
@@ -185,24 +196,25 @@ void moveAxis(int axisIndex, float target) {
 }
 
 float getCurrentPosition(int axisIndex) {
-  switch (axisIndex) {
-    case 0: return currentX;
-    case 1: return currentY;
-    case 2: return currentZ;
-    case 3: return currentE0;
-    case 4: return currentE1;
-    default: return 0;
+  if (current_position.find(axisIndex) != current_position.end()) {
+    return current_position[axisIndex];
   }
+  return 0.0;
 }
 
 void setCurrentPosition(int axisIndex, float position) {
-  switch (axisIndex) {
-    case 0: currentX = position; break;
-    case 1: currentY = position; break;
-    case 2: currentZ = position; break;
-    case 3: currentE0 = position; break;
-    case 4: currentE1 = position; break;
+  if (current_position.find(axisIndex) != current_position.end()) {
+    current_position[axisIndex] = position;
   }
+}
+// Helper function to get the axis name from the axis index
+String getAxisName(int axisIndex) {
+  for (const auto& pair : axis_map) {
+    if (pair.second == axisIndex) {
+      return pair.first;
+    }
+  }
+  return "";
 }
 
 void performConcurrentMovements() {
@@ -216,8 +228,9 @@ void performConcurrentMovements() {
 
       // Print information about the last step
       if (axes[i].stepsRemaining == 0) {
+        String axisName = getAxisName(i);
         Serial.print("Achse ");
-        Serial.print(i);
+        Serial.print(axisName);
         Serial.println(" hat seine Bewegung beendet.");
       }
     }
@@ -251,6 +264,16 @@ void disableMotors() {
     digitalWrite(E1_ENABLE_PIN, HIGH);
     motorsEnabled = false;
     Serial.println("Motoren deaktiviert.");
+  }
+}
+
+void processMotorCommand(String command) {
+  if (command == "FORWARD") {
+    controlMotor(true);
+  } else if (command == "REVERSE") {
+    controlMotor(false);
+  } else if (command == "STOP") {
+    controlMotor(false, LOW);
   }
 }
 
