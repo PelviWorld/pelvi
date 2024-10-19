@@ -18,7 +18,7 @@ def create_canvas_xy(_canvas_xy, _canvas_frame):
     _canvas_xy.update_red_rectangle()
 
     frame_rectangle = ttk.Frame(frame_xy)
-    frame_rectangle.grid(pady=3)
+    frame_rectangle.grid(pady=30)
     label_rectangle = ttk.Label(frame_rectangle, text="Move Red Rectangle")
     label_rectangle.grid(row=0, column=0, columnspan=2)
 

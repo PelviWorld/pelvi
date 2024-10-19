@@ -2,31 +2,33 @@ import tkinter as tk
 from pelvi.background import load_image_to_canvas
 
 class CanvasArea:
-    def __init__(self, parent, pelvi, axis1, axis2, width, height, background_image):
-        self.canvas = tk.Canvas(parent, width=width, height=height)
+    def __init__(self, parent, pelvi, arduino, axis1, axis2, width, height, scale, background_image):
+        self.scale = scale
+        self.canvas = tk.Canvas(parent, width=width*self.scale, height=height*self.scale)
         load_image_to_canvas(self.canvas, background_image, width, height)
         self.canvas.bind("<Button-1>", self.on_click_canvas)
         self.canvas.bind("<Configure>", self.on_resize)
         self.pelvi = pelvi
+        self.arduino = arduino
         self.point = None
         self.axis1 = axis1
         self.axis2 = axis2
         self.has_blocked_area = (self.axis1 == "X" and self.axis2 == "Y")
 
     @classmethod
-    def create_canvas_area(cls, parent, pelvi, axis1, axis2, width, height, background_image, row, column):
-        canvas_area = cls(parent, pelvi, axis1, axis2, width, height, background_image)
+    def create_canvas_area(cls, parent, pelvi, arduino, axis1, axis2, width, height, background_image, row, column, scale):
+        canvas_area = cls(parent, pelvi, arduino, axis1, axis2, width, height, scale, background_image)
         canvas_area.create_axes_lines(0, 0)
         canvas_area.canvas.grid(row=row, column=column, padx=10, pady=10)
         return canvas_area
 
     def on_click_canvas(self, event):
-        x = event.x
-        y = event.y
-
-        if x < 0 or x > self.canvas.winfo_width() or y < 0 or y > self.canvas.winfo_height():
+        if event.x < 0 or event.x > self.canvas.winfo_width() or event.y < 0 or event.y > self.canvas.winfo_height():
             print("Click outside the canvas")
             return
+
+        x = int(event.x / self.scale)
+        y = int(event.y / self.scale)
         self.move_to(x, y)
 
     def on_resize(self, event):
@@ -35,10 +37,10 @@ class CanvasArea:
     def update_point(self):
         if self.axis1 == self.axis2:
             x_pixel = self.canvas.winfo_width() // 2
-            y_pixel = self.pelvi.get_axis_value(self.axis1)
+            y_pixel = self.pelvi.get_axis_value(self.axis1) * self.scale
         else:
-            x_pixel = self.pelvi.get_axis_value(self.axis1)
-            y_pixel = self.pelvi.get_axis_value(self.axis2)
+            x_pixel = self.pelvi.get_axis_value(self.axis1) * self.scale
+            y_pixel = self.pelvi.get_axis_value(self.axis2) * self.scale
 
         if self.point:
             self.canvas.delete(self.point)
@@ -61,10 +63,10 @@ class CanvasArea:
         self.canvas.delete('red_rectangle')
 
         self.canvas.create_rectangle(
-            rectangle_left,
-            rectangle_top,
-            rectangle_right,
-            rectangle_bottom,
+            rectangle_left * self.scale,
+            rectangle_top * self.scale,
+            rectangle_right * self.scale,
+            rectangle_bottom * self.scale,
             fill='red',
             outline='',
             tags='red_rectangle'
@@ -82,9 +84,13 @@ class CanvasArea:
         if self.has_blocked_area and self.is_point_inside_rectangle(x, y):
             print("Bewegung in den roten Bereich ist nicht erlaubt.")
             return False
-        self.pelvi.move_axis_to(self.axis1, x)
-        self.pelvi.move_axis_to(self.axis2, y)
+
+        if self.axis1 != self.axis2:
+            self.arduino.send_coordinates(self.axis1, self.pelvi.move_axis_to(self.axis1, x))
+        self.arduino.send_coordinates(self.axis2, self.pelvi.move_axis_to(self.axis2, y))
+
         self.update_point()
+
         return True
 
     def is_point_inside_rectangle(self, x_mm, y_mm):

@@ -1,5 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
+
+from screeninfo import get_monitors
+
 from pelvi.pelvi import Pelvi
 from pelvi.arduino import Arduino
 from pelvi.canvasarea import CanvasArea
@@ -14,23 +17,31 @@ arduino_port: str = config['Arduino'].get('port')
 arduino_baudrate: int = config['Arduino'].getint('baudrate')
 testing: bool = config['General'].getboolean('testing', False) if config.has_section('General') else False
 
-def create_canvas_areas():
+def create_canvas_areas(_pelvi,_arduino):
     root_canvas = ttk.Frame(root)
     root_canvas.grid(row=0, column=0, padx=4, pady=5)
 
+    # Get the primary monitor's dimensions
+    monitor = get_monitors()[0]
+    monitor_height = monitor.height - 270
+
+    # Calculate the ratio between the monitor and the pelvi
+    pelvi_height = _pelvi.get_axis_range("Y") + _pelvi.get_axis_range("E0") + _pelvi.get_axis_range("E1")
+    scale = monitor_height / pelvi_height
+
     create_canvas_xy(CanvasArea.create_canvas_area(
-        root_canvas, pelvi, "X", "Y", pelvi.get_axis_range("X"), pelvi.get_axis_range("Y"),
-        'ressources/background_xy.png', 0, 0
+        root_canvas, _pelvi, _arduino, "X", "Y", pelvi.get_axis_range("X"), pelvi.get_axis_range("Y"),
+        'ressources/background_xy.png', 0, 0, scale
     ), root_canvas)
 
     create_canvas_ze0_buttons(CanvasArea.create_canvas_area(
-        root_canvas, pelvi, "Z", "E0", pelvi.get_axis_range("Z"), pelvi.get_axis_range("E0"),
-        'ressources/background_ze0.png', 1, 0
+        root_canvas, _pelvi, _arduino, "Z", "E0", pelvi.get_axis_range("Z"), pelvi.get_axis_range("E0"),
+        'ressources/background_ze0.png', 1, 0, scale
     ), root_canvas)
 
     create_canvas_e1_buttons(CanvasArea.create_canvas_area(
-        root_canvas, pelvi, "E1", "E1", 100, pelvi.get_axis_range("E1"),
-        'ressources/background_e1.png', 2, 0
+        root_canvas, _pelvi, _arduino, "E1", "E1", 100, pelvi.get_axis_range("E1"),
+        'ressources/background_e1.png', 2, 0, scale
     ), root_canvas)
 
     create_canvas_dc_motor_buttons(root_canvas, arduino)
@@ -52,11 +63,13 @@ if __name__ == '__main__':
     pelvi = Pelvi()
     arduino = Arduino(arduino_port, arduino_baudrate)
     root = create_main_window()
-    create_canvas_areas()
+    create_canvas_areas(pelvi, arduino)
 
     # Startpositionen setzen
-    arduino.send_coordinates('XY', pelvi.get_axis_value("X"), pelvi.get_axis_value("Y"))
-    arduino.send_coordinates('ZE0', pelvi.get_axis_value("Z"), pelvi.get_axis_value("E0"))
+    arduino.send_coordinates('X', pelvi.get_axis_value("X"))
+    arduino.send_coordinates('Y', pelvi.get_axis_value("Y"))
+    arduino.send_coordinates('Z', pelvi.get_axis_value("Z"))
+    arduino.send_coordinates('E0', pelvi.get_axis_value("E0"))
     arduino.send_coordinates('E1', pelvi.get_axis_value("E1"))
 
     # Hauptschleife starten
