@@ -25,12 +25,12 @@ def create_canvas_areas():
 
     create_canvas_ze0_buttons(CanvasArea.create_canvas_area(
         root_canvas, pelvi, "Z", "E0", pelvi.get_axis_range("Z"), pelvi.get_axis_range("E0"),
-        'ressources/background_ze0.png', 0, 1
+        'ressources/background_ze0.png', 1, 0
     ), root_canvas)
 
     create_canvas_e1_buttons(CanvasArea.create_canvas_area(
         root_canvas, pelvi, "E1", "E1", 100, pelvi.get_axis_range("E1"),
-        'ressources/background_e1.png', 0, 2
+        'ressources/background_e1.png', 2, 0
     ), root_canvas)
 
     create_canvas_dc_motor_buttons(root_canvas, arduino)

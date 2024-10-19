@@ -2,7 +2,7 @@ from tkinter import ttk
 
 def create_canvas_xy(_canvas_xy, _canvas_frame):
     frame_xy = ttk.Frame(_canvas_frame)
-    frame_xy.grid(row=1, column=0, padx=4, pady=5)
+    frame_xy.grid(row=0, column=1, padx=4, pady=5)
     button_frame_xy = ttk.Frame(frame_xy)
     button_frame_xy.grid(pady=5)
 
@@ -55,7 +55,7 @@ def create_canvas_ze0_buttons(_canvas_ze0, _canvas_frame):
 
 def create_canvas_e1_buttons(_canvas_e1, _canvas_frame):
     frame_e1 = ttk.Frame(_canvas_frame)
-    frame_e1.grid(row=1, column=2, padx=10, pady=10)
+    frame_e1.grid(row=2, column=1, padx=10, pady=10)
     button_frame_e1 = ttk.Frame(frame_e1)
     button_frame_e1.grid(pady=5)
 

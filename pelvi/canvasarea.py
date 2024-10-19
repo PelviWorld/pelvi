@@ -17,7 +17,7 @@ class CanvasArea:
     def create_canvas_area(cls, parent, pelvi, axis1, axis2, width, height, background_image, row, column):
         canvas_area = cls(parent, pelvi, axis1, axis2, width, height, background_image)
         canvas_area.create_axes_lines(0, 0)
-        canvas_area.canvas.grid(row=row, column=column, padx=4, pady=5)
+        canvas_area.canvas.grid(row=row, column=column, padx=10, pady=10)
         return canvas_area
 
     def on_click_canvas(self, event):
