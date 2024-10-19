@@ -4,10 +4,15 @@ from pelvi.pelvi import Pelvi
 from pelvi.arduino import Arduino
 from pelvi.canvasarea import CanvasArea
 from pelvi.buttoncreator import create_canvas_xy, create_canvas_ze0_buttons, create_canvas_e1_buttons, create_canvas_dc_motor_buttons, create_canvas_save_button
+import configparser
 
-# Konfiguration
-arduino_port = 'COM7'
-arduino_baudrate = 115200
+# Read configuration
+config = configparser.ConfigParser()
+config.read('.config')
+
+arduino_port: str = config['Arduino'].get('port')
+arduino_baudrate: int = config['Arduino'].getint('baudrate')
+testing: bool = config['General'].getboolean('testing', False) if config.has_section('General') else False
 
 def create_canvas_areas():
     root_canvas = ttk.Frame(root)
@@ -34,6 +39,12 @@ def create_canvas_areas():
 def create_main_window():
     _root = tk.Tk()
     _root.title("Koordinatensteuerung")
+    _root.state('zoomed')
+    if not testing:
+        _root.attributes('-fullscreen', True)
+        _root.attributes('-topmost', True)
+        _root.update()
+        _root.attributes('-topmost', False)
     ttk.Style().theme_use('clam')
     return _root
 
