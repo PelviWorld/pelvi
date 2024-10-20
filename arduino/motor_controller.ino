@@ -40,22 +40,10 @@ const float E0_MAX_POS = 180.0;
 const float E1_MAX_POS = 180.0;
 
 // Axis name to axis index map
-const std::map<String, int> axis_map = {
-    {"X", 0},
-    {"Y", 1},
-    {"Z", 2},
-    {"E0", 3},
-    {"E1", 4}
-};
+const char* axis_names[] = {"X", "Y", "Z", "E0", "E1"};
 
 // Aktuelle Positionen
-std::map<int, float> current_position = {
-    {0, 0.0},  // X
-    {1, 0.0},  // Y
-    {2, 0.0},  // Z
-    {3, 0.0},  // E0
-    {4, 0.0}   // E1
-};
+float current_position[] = {0.0, 0.0, 0.0, 0.0, 0.0};
 
 // Variablen für die Motoraktivierung
 unsigned long lastMovementTime = 0;
@@ -80,28 +68,25 @@ AxisState axes[5] = {
 
 const unsigned long stepDelay = 1000000 / maxSpeed;  // Delay between steps in microseconds
 
-void setup() {
-  Serial.begin(115200);
-  Serial.println("System startet...");
-
-  initializePins();
-  enableMotors();
-  homing();
-  lastMovementTime = millis();
+float getCurrentPosition(int axisIndex) {
+  if (axisIndex >= 0 && axisIndex < 5) {
+    return current_position[axisIndex];
+  }
+  return 0.0;
 }
 
-void loop() {
-  if (Serial.available()) {
-    String command = Serial.readStringUntil('\n');
-    command.trim();
-    processCommand(command);
+void setCurrentPosition(int axisIndex, float position) {
+  if (axisIndex >= 0 && axisIndex < 5) {
+    current_position[axisIndex] = position;
   }
+}
 
-  if (motorsEnabled && (millis() - lastMovementTime >= motorDisableDelay)) {
-    disableMotors();
+// Helper function to get the axis name from the axis index
+const char* getAxisName(int axisIndex) {
+  if (axisIndex >= 0 && axisIndex < 5) {
+    return axis_names[axisIndex];
   }
-
-  performConcurrentMovements();
+  return "";
 }
 
 void initializePins() {
@@ -122,6 +107,32 @@ void initializePins() {
 
   digitalWrite(MOTOR_IN1_PIN, LOW);
   digitalWrite(MOTOR_IN2_PIN, LOW);
+}
+
+void stepMotor(int stepPin) {
+  digitalWrite(stepPin, HIGH);
+  delayMicroseconds(2);
+  digitalWrite(stepPin, LOW);
+}
+
+void performConcurrentMovements() {
+  unsigned long currentTime = micros();
+  for (int i = 0; i < 5; i++) {
+    if (axes[i].stepsRemaining > 0 && (currentTime - axes[i].lastStepTime >= stepDelay)) {
+      digitalWrite(axes[i].dirPin, axes[i].direction ? HIGH : LOW);
+      stepMotor(axes[i].stepPin);
+      axes[i].stepsRemaining--;
+      axes[i].lastStepTime = currentTime;
+
+      // Print information about the last step
+      if (axes[i].stepsRemaining == 0) {
+        String axisName = getAxisName(i);
+        Serial.print("Achse ");
+        Serial.print(axisName);
+        Serial.println(" hat seine Bewegung beendet.");
+      }
+    }
+  }
 }
 
 void homing() {
@@ -155,6 +166,26 @@ void homing() {
   Serial.println("Homing abgeschlossen.");
 }
 
+void controlMotor(bool forward, int lowOnStop = HIGH) {
+  if (lowOnStop == LOW) {
+    Serial.println("DC Motor gestoppt");
+  } else {
+    Serial.println(forward ? "DC Motor vorwärts" : "DC Motor rückwärts");
+  }
+  digitalWrite(MOTOR_IN1_PIN, forward ? lowOnStop : LOW);
+  digitalWrite(MOTOR_IN2_PIN, forward ? LOW : lowOnStop );
+}
+
+void processMotorCommand(String command) {
+  if (command == "FORWARD") {
+    controlMotor(true);
+  } else if (command == "REVERSE") {
+    controlMotor(false);
+  } else if (command == "STOP") {
+    controlMotor(false, LOW);
+  }
+}
+
 void processCommand(String command) {
   int spaceIndex = command.indexOf(' ');
   String axis = command.substring(0, spaceIndex);
@@ -162,20 +193,21 @@ void processCommand(String command) {
     return;
 
   if (command.startsWith("MOTOR")) {
-    String direction = command.substring(spaceIndex + 1);
+    String motorCommand = command.substring(spaceIndex + 1);
     processMotorCommand(motorCommand);
     return;
+  } else {
+    float value = command.substring(spaceIndex + 1).toFloat();
+    processAxisCommand(axis, value);
   }
-    } else {
-      float value = command.substring(spaceIndex + 1).toFloat();
-      processAxisCommand(axis, value);
-    }
 }
 
 void processAxisCommand(String axis, float value) {
-  if (axis_map.find(axis) != axis_map.end()) {
-    int axisIndex = axis_map[axis];
-    moveAxis(axisIndex, value);
+  for (int i = 0; i < 5; i++) {
+    if (axis == axis_names[i]) {
+      moveAxis(i, value);
+      return;
+    }
   }
 }
 
@@ -195,53 +227,6 @@ void moveAxis(int axisIndex, float target) {
   lastMovementTime = millis();
 }
 
-float getCurrentPosition(int axisIndex) {
-  if (current_position.find(axisIndex) != current_position.end()) {
-    return current_position[axisIndex];
-  }
-  return 0.0;
-}
-
-void setCurrentPosition(int axisIndex, float position) {
-  if (current_position.find(axisIndex) != current_position.end()) {
-    current_position[axisIndex] = position;
-  }
-}
-// Helper function to get the axis name from the axis index
-String getAxisName(int axisIndex) {
-  for (const auto& pair : axis_map) {
-    if (pair.second == axisIndex) {
-      return pair.first;
-    }
-  }
-  return "";
-}
-
-void performConcurrentMovements() {
-  unsigned long currentTime = micros();
-  for (int i = 0; i < 5; i++) {
-    if (axes[i].stepsRemaining > 0 && (currentTime - axes[i].lastStepTime >= stepDelay)) {
-      digitalWrite(axes[i].dirPin, axes[i].direction ? HIGH : LOW);
-      stepMotor(axes[i].stepPin);
-      axes[i].stepsRemaining--;
-      axes[i].lastStepTime = currentTime;
-
-      // Print information about the last step
-      if (axes[i].stepsRemaining == 0) {
-        String axisName = getAxisName(i);
-        Serial.print("Achse ");
-        Serial.print(axisName);
-        Serial.println(" hat seine Bewegung beendet.");
-      }
-    }
-  }
-}
-
-void stepMotor(int stepPin) {
-  digitalWrite(stepPin, HIGH);
-  delayMicroseconds(2);
-  digitalWrite(stepPin, LOW);
-}
 
 void enableMotors() {
   if (!motorsEnabled) {
@@ -267,22 +252,26 @@ void disableMotors() {
   }
 }
 
-void processMotorCommand(String command) {
-  if (command == "FORWARD") {
-    controlMotor(true);
-  } else if (command == "REVERSE") {
-    controlMotor(false);
-  } else if (command == "STOP") {
-    controlMotor(false, LOW);
-  }
+void setup() {
+  Serial.begin(115200);
+  Serial.println("System startet...");
+
+  initializePins();
+  enableMotors();
+  homing();
+  lastMovementTime = millis();
 }
 
-void controlMotor(bool forward, int lowOnStop = HIGH) {
-  if (lowOnStop == LOW) {
-    Serial.println("DC Motor gestoppt");
-  } else {
-    Serial.println(forward ? "DC Motor vorwärts" : "DC Motor rückwärts");
+void loop() {
+  if (Serial.available()) {
+    String command = Serial.readStringUntil('\n');
+    command.trim();
+    processCommand(command);
   }
-  digitalWrite(MOTOR_IN1_PIN, forward ? lowOnStop : LOW);
-  digitalWrite(MOTOR_IN2_PIN, forward ? LOW : lowOnStop );
+
+  if (motorsEnabled && (millis() - lastMovementTime >= motorDisableDelay)) {
+    disableMotors();
+  }
+
+  performConcurrentMovements();
 }
