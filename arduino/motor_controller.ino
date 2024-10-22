@@ -81,11 +81,20 @@ void performConcurrentMovements() {
       axes[i].stepsRemaining--;
       axes[i].lastStepTime = currentTime;
 
+      // Update the current position
+      float stepSize = 1.0 / stepsPerMM;
+      if (axes[i].direction) {
+        axes[i].currentPosition += stepSize;
+      } else {
+        axes[i].currentPosition -= stepSize;
+      }
+
       // Print information about the last step
       if (axes[i].stepsRemaining == 0) {
         Serial.print("Achse ");
         Serial.print(axes[i].name);
-        Serial.println(" hat seine Bewegung beendet.");
+        Serial.print(" hat seine Bewegung beendet at: ");
+        Serial.println(axes[i].currentPosition);
       }
     }
   }
@@ -180,8 +189,6 @@ void moveAxis(int axisIndex, float target) {
 
   axes[axisIndex].stepsRemaining = abs(steps);
   axes[axisIndex].direction = steps >= 0;
-
-  setCurrentPosition(axisIndex, target);
 
   lastMovementTime = millis();
 }
