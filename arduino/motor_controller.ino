@@ -103,6 +103,7 @@ void performConcurrentMovements() {
 }
 
 void homing() {
+  enableMotors();
   Serial.println("Homing wird ausgeführt...");
 
   unsigned long homingDelay = 1000000 / homingSpeed;
@@ -228,7 +229,6 @@ void setup() {
   Serial.println("System startet...");
 
   initializePins();
-  enableMotors();
   homing();
   lastMovementTime = millis();
 }
