@@ -13,7 +13,7 @@ struct AxisState {
   long stepsRemaining;
   unsigned long lastStepTime;
   bool direction;
-  float currentPosition;
+  double currentPosition;
   bool isHomed;
 };
 
@@ -27,7 +27,8 @@ AxisState axes[5] = {
 };
 
 // Konfiguration
-const float stepsPerMM = 800.0;      // Schritte pro mm (gemäß Ihrer Kalibrierung)
+const double stepsPerMM = 800.0;      // Schritte pro mm (gemäß Ihrer Kalibrierung)
+const double stepSize = 1.0 / stepsPerMM; // Schrittgröße (in mm)
 const int maxSpeed = 28000;          // Maximale Geschwindigkeit (Schritte pro Sekunde)
 const int homingSpeed = 25000;       // Homing-Geschwindigkeit (Schritte pro Sekunde)
 const int acceleration = 70;         // Beschleunigung (Schritte pro Sekunde²)
@@ -38,14 +39,14 @@ bool motorsEnabled = true;
 const unsigned long motorDisableDelay = 30000; // 30 Sekunden
 const unsigned long stepDelay = 1000000 / maxSpeed;  // Delay between steps in microseconds
 
-float getCurrentPosition(int axisIndex) {
+double getCurrentPosition(int axisIndex) {
   if (axisIndex >= 0 && axisIndex < 5) {
     return axes[axisIndex].currentPosition;
   }
   return 0.0;
 }
 
-void setCurrentPosition(int axisIndex, float position) {
+void setCurrentPosition(int axisIndex, double position) {
   if (axisIndex >= 0 && axisIndex < 5) {
     axes[axisIndex].currentPosition = position;
   }
@@ -82,8 +83,7 @@ void performConcurrentMovements() {
       axes[i].lastStepTime = currentTime;
 
       // Update the current position
-      float stepSize = 1.0 / stepsPerMM;
-      float position = getCurrentPosition(i);
+      double position = getCurrentPosition(i);
       if (axes[i].direction) {
         position += stepSize;
       } else {
@@ -179,7 +179,7 @@ void processCommand(String command) {
   processAxisCommand(axis, value);
 }
 
-void processAxisCommand(String axis, float value) {
+void processAxisCommand(String axis, double value) {
   for (int i = 0; i < 5; i++) {
     if (axis == axes[i].name) {
       moveAxis(i, value);
@@ -188,14 +188,14 @@ void processAxisCommand(String axis, float value) {
   }
 }
 
-void moveAxis(int axisIndex, float target) {
+void moveAxis(int axisIndex, double target) {
   enableMotors();
 
   if (target > axes[axisIndex].maxPos) {
     target = axes[axisIndex].maxPos;
   }
 
-  long steps = (target - getCurrentPosition(axisIndex)) * stepsPerMM;
+  long steps = (target - getCurrentPosition(axisIndex)) / stepSize;
 
   axes[axisIndex].stepsRemaining = abs(steps);
   axes[axisIndex].direction = steps >= 0;
