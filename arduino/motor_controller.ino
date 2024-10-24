@@ -136,6 +136,7 @@ void homing() {
     setCurrentPosition(i, 0.0);
   }
 
+  lastMovementTime = millis();
   Serial.println("Homing abgeschlossen.");
 }
 
@@ -227,10 +228,8 @@ void disableMotors() {
 void setup() {
   Serial.begin(115200);
   Serial.println("System startet...");
-
   initializePins();
   homing();
-  lastMovementTime = millis();
 }
 
 void loop() {
