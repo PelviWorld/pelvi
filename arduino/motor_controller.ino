@@ -108,6 +108,7 @@ void homing() {
 
   unsigned long homingDelay = 1000000 / homingSpeed;
   for (int i = 0; i < 5; i++) {
+    axes[i].stepsRemaining = 0;
     axes[i].isHomed = false;
   }
 
@@ -225,6 +226,20 @@ void disableMotors() {
   }
 }
 
+void readNextCommand() {
+  if (Serial.available()) {
+    String command = Serial.readStringUntil('\n');
+    command.trim();
+    processCommand(command);
+  }
+}
+
+void checkMotorStatus() {
+  if (motorsEnabled && (millis() - lastMovementTime >= motorDisableDelay)) {
+    disableMotors();
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.println("System startet...");
@@ -233,15 +248,7 @@ void setup() {
 }
 
 void loop() {
-  if (Serial.available()) {
-    String command = Serial.readStringUntil('\n');
-    command.trim();
-    processCommand(command);
-  }
-
-  if (motorsEnabled && (millis() - lastMovementTime >= motorDisableDelay)) {
-    disableMotors();
-  }
-
+  readNextCommand();
+  checkMotorStatus();
   performConcurrentMovements();
 }
