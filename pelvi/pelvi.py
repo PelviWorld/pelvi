@@ -126,6 +126,13 @@ class Pelvi:
         minimum, maximum = self.__get_range(axis)
         return maximum - minimum
 
+    def get_axis_refvalue(self, axis):
+        for device in self.__device_list:
+            for device_axis in device.axislist:
+                if device_axis.axisname == axis:
+                    return device_axis.refvalue
+        return None
+
     def __axis_name_for_axis_id(self, axis_id):
         for device in self.__device_list:
             for axis in device.axislist:

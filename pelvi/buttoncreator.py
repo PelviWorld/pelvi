@@ -82,13 +82,15 @@ def create_canvas_save_button(canvas_frame, pelvi):
     btn_save = ttk.Button(canvas_frame, text="Save", command=lambda: save_data(pelvi))
     btn_save.grid(row=3, column=2, padx=3, pady=5)
 
-def create_canvas_home_button(canvas_frame, arduino):
-    btn_home = ttk.Button(canvas_frame, text="Home", command=lambda: home_motors(arduino))
+def create_canvas_home_button(canvas_frame, arduino, canvas_xy, canvas_ze0, canvas_e1):
+    btn_home = ttk.Button(canvas_frame, text="Home", command=lambda: home_motors(arduino, [canvas_xy, canvas_ze0, canvas_e1]))
     btn_home.grid(row=3, column=1, padx=3, pady=5)
 
-def home_motors(arduino):
+def home_motors(arduino, canvas_areas):
     arduino.send_command('HOMING')
     print("Befehl: HOMING")
+    for canvas_area in canvas_areas:
+        canvas_area.homing_position()
 
 def motor_command(arduino, motor_cmd):
     command = 'MOTOR ' + motor_cmd

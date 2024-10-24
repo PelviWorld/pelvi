@@ -134,3 +134,12 @@ class CanvasArea:
         self.pelvi.update_blocked_area("Y", new_top, new_bottom)
 
         self.update_red_rectangle()
+
+    def homing_position(self):
+        if self.axis1:
+            self.pelvi.move_axis_to(self.axis1, self.pelvi.get_axis_refvalue(self.axis1))
+            print("Homing position for axis " + self.axis1 + " set to " + str(self.pelvi.get_axis_refvalue(self.axis1)))
+        if self.axis2:
+            self.pelvi.move_axis_to(self.axis2, self.pelvi.get_axis_refvalue(self.axis2))
+            print("Homing position for axis " + self.axis2 + " set to " + str(self.pelvi.get_axis_refvalue(self.axis2)))
+        self.update_point()

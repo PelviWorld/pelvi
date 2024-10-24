@@ -30,23 +30,23 @@ def create_canvas_areas(_pelvi,_arduino):
     pelvi_height = _pelvi.get_axis_range("Y") + _pelvi.get_axis_range("E0") + _pelvi.get_axis_range("E1")
     scale = monitor_height / pelvi_height
 
-    create_canvas_xy(CanvasArea.create_canvas_area(
+    canvas_xy = create_canvas_xy(CanvasArea.create_canvas_area(
         root_canvas, _pelvi, _arduino, "X", "Y", pelvi.get_axis_range("X"), pelvi.get_axis_range("Y"),
         'ressources/background_xy.png', 0, 0, scale
     ), root_canvas)
 
-    create_canvas_ze0_buttons(CanvasArea.create_canvas_area(
+    canvas_ze0 = create_canvas_ze0_buttons(CanvasArea.create_canvas_area(
         root_canvas, _pelvi, _arduino, "Z", "E0", pelvi.get_axis_range("Z"), pelvi.get_axis_range("E0"),
         'ressources/background_ze0.png', 1, 0, scale
     ), root_canvas)
 
-    create_canvas_e1_buttons(CanvasArea.create_canvas_area(
+    canvas_e1 = create_canvas_e1_buttons(CanvasArea.create_canvas_area(
         root_canvas, _pelvi, _arduino, "E1", "E1", 100, pelvi.get_axis_range("E1"),
         'ressources/background_e1.png', 2, 0, scale
     ), root_canvas)
 
     create_canvas_dc_motor_buttons(root_canvas, arduino)
-    create_canvas_home_button(root_canvas, arduino)
+    create_canvas_home_button(root_canvas, arduino, canvas_xy, canvas_ze0, canvas_e1)
     create_canvas_save_button(root_canvas, pelvi)
 
 def create_main_window():
