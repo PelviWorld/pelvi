@@ -131,9 +131,3 @@ def print_version(connection):
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM database")
     print(cursor.fetchall())
-
-if __name__ == '__main__':
-    conn = get_database(file)
-    print_version(conn)
-
-

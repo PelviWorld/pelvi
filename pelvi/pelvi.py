@@ -144,20 +144,3 @@ class Pelvi:
             if self.__axis_name_for_axis_id(blocked.axis) == axis:
                 blocked.minvalue = minvalue
                 blocked.maxvalue = maxvalue
-
-if __name__ == '__main__':
-    pelvi = Pelvi()
-    pelvi.print_user_data()
-    print("moving Y by 20 results", pelvi.move_axis_by("Y", 20))
-    print("moving C by 22 results", pelvi.move_axis_by("A", 22))
-    pelvi.print_user_data()
-    pelvi.save_user_data()
-    pelvi.add_new_user("Test", "Name")
-    print("moving B by 110 results", pelvi.move_axis_by("E0", 110))
-    print("moving B by 210 results", pelvi.move_axis_by("E1", 210))
-    print("moving Y to 333 results", pelvi.move_axis_to("Y", 333))
-    print("moving Y by 999 results", pelvi.move_axis_by("Y", 999))
-    print("moving Y by -99 results", pelvi.move_axis_by("Y", -99))
-    pelvi.print_user_data()
-    pelvi.save_user_data()
-    print("Axix Value from Y is", pelvi.get_axis_value("Y"))

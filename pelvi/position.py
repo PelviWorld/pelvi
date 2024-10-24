@@ -36,8 +36,3 @@ class Position:
     @position.setter
     def position(self, position):
         self.__position = position
-
-
-if __name__ == '__main__':
-    pos = Position(0, 0, 1)
-    print(pos.positionid, pos.positionsid, pos.deviceaxisid)

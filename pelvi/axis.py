@@ -25,7 +25,3 @@ class Axis:
     @property
     def refvalue(self):
         return self.__refvalue
-
-if __name__ == '__main__':
-    axis = Axis(1, "x", 0, 1000, 0)
-    print(axis.axisid, axis.axisname, axis.minvalue, axis.maxvalue, axis.refvalue)
