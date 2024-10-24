@@ -104,6 +104,9 @@ void homing() {
   Serial.println("Homing wird ausgeführt...");
 
   unsigned long homingDelay = 1000000 / homingSpeed;
+  for (int i = 0; i < 5; i++) {
+    axes[i].isHomed = false;
+  }
 
   for (int i = 0; i < 5; i++) {
     if (digitalRead(axes[i].minPin) == LOW) {
@@ -159,14 +162,18 @@ void processCommand(String command) {
   if (spaceIndex == -1)
     return;
 
+  if (command == "HOMING") {
+    homing();
+    return;
+  }
   if (command.startsWith("MOTOR")) {
     String motorCommand = command.substring(spaceIndex + 1);
     processMotorCommand(motorCommand);
     return;
-  } else {
-    float value = command.substring(spaceIndex + 1).toFloat();
-    processAxisCommand(axis, value);
   }
+
+  float value = command.substring(spaceIndex + 1).toFloat();
+  processAxisCommand(axis, value);
 }
 
 void processAxisCommand(String axis, float value) {
