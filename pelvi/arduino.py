@@ -33,6 +33,13 @@ class Arduino:
     def write(self, data):
         self.__serial.write(data)
 
+    def send_command(self, command):
+        if self.__serial:
+            self.__serial.write(command.encode())
+            print(f"Gesendet: {command.strip()}")
+        else:
+            print("Arduino ist nicht verbunden.")
+
     def send_coordinates(self, axis, value):
         if self.__serial:
             command = f"{axis} {value}\n"

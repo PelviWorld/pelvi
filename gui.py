@@ -6,7 +6,8 @@ from screeninfo import get_monitors
 from pelvi.pelvi import Pelvi
 from pelvi.arduino import Arduino
 from pelvi.canvasarea import CanvasArea
-from pelvi.buttoncreator import create_canvas_xy, create_canvas_ze0_buttons, create_canvas_e1_buttons, create_canvas_dc_motor_buttons, create_canvas_save_button
+from pelvi.buttoncreator import create_canvas_xy, create_canvas_ze0_buttons, create_canvas_e1_buttons, \
+    create_canvas_dc_motor_buttons, create_canvas_save_button, create_canvas_home_button
 import configparser
 
 # Read configuration
@@ -45,6 +46,7 @@ def create_canvas_areas(_pelvi,_arduino):
     ), root_canvas)
 
     create_canvas_dc_motor_buttons(root_canvas, arduino)
+    create_canvas_home_button(root_canvas, arduino)
     create_canvas_save_button(root_canvas, pelvi)
 
 def create_main_window():
