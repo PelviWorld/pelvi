@@ -83,11 +83,13 @@ void performConcurrentMovements() {
 
       // Update the current position
       float stepSize = 1.0 / stepsPerMM;
+      float position = getCurrentPosition(i);
       if (axes[i].direction) {
-        axes[i].currentPosition += stepSize;
+        position += stepSize;
       } else {
-        axes[i].currentPosition -= stepSize;
+        position -= stepSize;
       }
+      setCurrentPosition(i, position);
 
       // Print information about the last step
       if (axes[i].stepsRemaining == 0) {
