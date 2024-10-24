@@ -95,7 +95,7 @@ void performConcurrentMovements() {
       if (axes[i].stepsRemaining == 0) {
         Serial.print("Achse ");
         Serial.print(axes[i].name);
-        Serial.print(" hat seine Bewegung beendet at: ");
+        Serial.print(" hat seine Bewegung beendet bei: ");
         Serial.println(axes[i].currentPosition);
       }
     }
