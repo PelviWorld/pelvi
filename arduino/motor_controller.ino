@@ -157,21 +157,22 @@ void processMotorCommand(String command) {
 }
 
 void processCommand(String command) {
-  int spaceIndex = command.indexOf(' ');
-  String axis = command.substring(0, spaceIndex);
-  if (spaceIndex == -1)
-    return;
-
   if (command == "HOMING") {
     homing();
     return;
   }
+
+  int spaceIndex = command.indexOf(' ');
+  if (spaceIndex == -1)
+    return;
+
   if (command.startsWith("MOTOR")) {
     String motorCommand = command.substring(spaceIndex + 1);
     processMotorCommand(motorCommand);
     return;
   }
 
+  String axis = command.substring(0, spaceIndex);
   float value = command.substring(spaceIndex + 1).toFloat();
   processAxisCommand(axis, value);
 }
