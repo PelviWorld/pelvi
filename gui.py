@@ -52,7 +52,7 @@ def create_canvas_areas(_pelvi,_arduino):
 def create_main_window():
     _root = tk.Tk()
     _root.title("Koordinatensteuerung")
-    _root.state('zoomed')
+    _root.attributes('-zoomed', 1)
     if not testing:
         _root.attributes('-fullscreen', True)
         _root.attributes('-topmost', True)
