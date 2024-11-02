@@ -32,7 +32,3 @@ class Positions:
     @userid.setter
     def userid(self, userid):
         self.__userid = userid
-
-if __name__ == '__main__':
-    positions = Positions(-1, 0, -1)
-    print(positions.positionsid, positions.positionsnumber, positions.userid)

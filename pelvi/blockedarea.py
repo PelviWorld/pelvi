@@ -48,12 +48,3 @@ class Blockedarea:
     @property
     def blockedvalues(self):
         return self.__blockedvalues
-
-if __name__ == '__main__':
-    axis1 = Axis(1, "x", 0, 1000, 0)
-    axis2 = Axis(2, "y", 0, 1000, 0)
-    blocked1 = Blockedvalues(axis1, 300, 1000)
-    blocked2 = Blockedvalues(axis2, 300, 500)
-    blockedarea = Blockedarea(1, [blocked1, blocked2])
-    for blocked in blockedarea.blockedvalues:
-        print(blocked.axis.axisname, blocked.minvalue, blocked.maxvalue)

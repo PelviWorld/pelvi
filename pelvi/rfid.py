@@ -18,7 +18,3 @@ class UserRfid:
     @userid.setter
     def userid(self, userid):
         self.__userid = userid
-
-if __name__ == '__main__':
-    user_rfid = UserRfid(-1, -1)
-    print(user_rfid.userid, user_rfid.rfid)
