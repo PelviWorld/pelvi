@@ -58,7 +58,7 @@ def create_database(connection):
     # create device in Back
     cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("X", 0, 300, 0)""")
     axisx = cursor.lastrowid
-    cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("Y", 0, 470, 0)""")
+    cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("Y", 0, 475, 0)""")
     axisy = cursor.lastrowid
     cursor.execute("""INSERT INTO device (devicename) VALUES("Back")""")
     deviceback = cursor.lastrowid
