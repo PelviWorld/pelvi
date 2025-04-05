@@ -20,10 +20,9 @@ struct AxisState {
 // NAME, STEP, DIR, MIN, ENABLE, MAX_POS, STEPS_REMAINING, LAST_STEP_TIME, DIRECTION, CURRENT_POSITION, IS_HOMED
 AxisState axes[5] = {
   {"X",  54,   55,  3,   38,     300.0,   0,               0,              true,      0.0,              false},
-  {"Y",  60,   61,  14,  56,     470.0,   0,               0,              true,      0.0,              false},
+  {"Y",  60,   61,  14,  56,     475.0,   0,               0,              true,      0.0,              false},
   {"Z",  46,   48,  18,  62,     290.0,   0,               0,              true,      0.0,              false},
   {"E0", 26,   28,  2,   24,     180.0,   0,               0,              true,      0.0,              false},
-  {"E1", 36,   34,  15,  30,     180.0,   0,               0,              true,      0.0,              false}
 };
 
 // Konfiguration
