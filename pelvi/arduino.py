@@ -20,8 +20,6 @@ class ArduinoMock:
             self.buffer.append(b'Z axis moved\n')
         elif command.startswith('E0 '):
             self.buffer.append(b'E0 axis moved\n')
-        elif command.startswith('E1 '):
-            self.buffer.append(b'E1 axis moved\n')
 
     @staticmethod
     def close():

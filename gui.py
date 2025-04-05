@@ -6,7 +6,7 @@ from screeninfo import get_monitors
 from pelvi.pelvi import Pelvi
 from pelvi.arduino import Arduino
 from pelvi.canvasarea import CanvasArea
-from pelvi.buttoncreator import create_canvas_xy, create_canvas_ze0_buttons, create_canvas_e1_buttons, \
+from pelvi.buttoncreator import create_canvas_xy, create_canvas_ze0_buttons, \
     create_canvas_dc_motor_buttons, create_canvas_save_button, create_canvas_home_button
 import configparser
 
@@ -24,10 +24,10 @@ def create_canvas_areas(_pelvi,_arduino):
 
     # Get the primary monitor's dimensions
     monitor = get_monitors()[0]
-    monitor_height = monitor.height - 270
+    monitor_height = monitor.height - 450
 
     # Calculate the ratio between the monitor and the pelvi
-    pelvi_height = _pelvi.get_axis_range("Y") + _pelvi.get_axis_range("E0") + _pelvi.get_axis_range("E1")
+    pelvi_height = _pelvi.get_axis_range("Y") + _pelvi.get_axis_range("E0")
     scale = monitor_height / pelvi_height
 
     canvas_xy = create_canvas_xy(CanvasArea.create_canvas_area(
@@ -40,13 +40,8 @@ def create_canvas_areas(_pelvi,_arduino):
         'ressources/background_ze0.png', 1, 0, scale
     ), root_canvas)
 
-    canvas_e1 = create_canvas_e1_buttons(CanvasArea.create_canvas_area(
-        root_canvas, _pelvi, _arduino, "E1", "E1", 100, pelvi.get_axis_range("E1"),
-        'ressources/background_e1.png', 2, 0, scale
-    ), root_canvas)
-
     create_canvas_dc_motor_buttons(root_canvas, arduino)
-    create_canvas_home_button(root_canvas, arduino, canvas_xy, canvas_ze0, canvas_e1)
+    create_canvas_home_button(root_canvas, arduino, canvas_xy, canvas_ze0)
     create_canvas_save_button(root_canvas, pelvi)
 
 def create_main_window():
@@ -72,7 +67,6 @@ if __name__ == '__main__':
     arduino.send_coordinates('Y', pelvi.get_axis_value("Y"))
     arduino.send_coordinates('Z', pelvi.get_axis_value("Z"))
     arduino.send_coordinates('E0', pelvi.get_axis_value("E0"))
-    arduino.send_coordinates('E1', pelvi.get_axis_value("E1"))
 
     # Hauptschleife starten
     root.mainloop()

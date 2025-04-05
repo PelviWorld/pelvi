@@ -79,14 +79,6 @@ def create_database(connection):
     cursor.execute("""INSERT INTO deviceaxis (deviceid, axisid) VALUES(?,?)""", (deviceseat, axise0))
     seat_device_e0 = cursor.lastrowid
 
-    # create device for Leg
-    cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("E1", 0, 180, 0)""")
-    axise1 = cursor.lastrowid
-    cursor.execute("""INSERT INTO device (devicename) VALUES("Leg")""")
-    deviceleg = cursor.lastrowid
-    cursor.execute("""INSERT INTO deviceaxis (deviceid, axisid) VALUES(?,?)""", (deviceleg, axise1))
-    leg_device_e1 = cursor.lastrowid
-
     # create device for Legrest
     cursor.execute("""INSERT INTO axis (axisname, minvalue, maxvalue, refvalue) VALUES("D", 0, 1000, 0)""")
     axisd = cursor.lastrowid
@@ -108,7 +100,6 @@ def create_database(connection):
     cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, back_device_y, 0))
     cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, seat_device_z, 0))
     cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, seat_device_e0, 0))
-    cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, leg_device_e1, 0))
     cursor.execute("""INSERT INTO position (positionsid, deviceaxisid, position) VALUES(?,?,?)""", (positionsid, legrest_device_d, 0))
 
     connection.commit()

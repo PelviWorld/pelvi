@@ -53,19 +53,6 @@ def create_canvas_ze0_buttons(_canvas_ze0, _canvas_frame):
 
     return _canvas_ze0
 
-def create_canvas_e1_buttons(_canvas_e1, _canvas_frame):
-    frame_e1 = ttk.Frame(_canvas_frame)
-    frame_e1.grid(row=2, column=1, padx=10, pady=10)
-    button_frame_e1 = ttk.Frame(frame_e1)
-    button_frame_e1.grid(pady=5)
-
-    btn_e1_negative = ttk.Button(button_frame_e1, text='↓', command=lambda: _canvas_e1.move_by("E1", 10), width=3)
-    btn_e1_negative.grid(row=0, column=0, padx=2, pady=2)
-    btn_e1_positive = ttk.Button(button_frame_e1, text='↑', command=lambda: _canvas_e1.move_by("E1", -10), width=3)
-    btn_e1_positive.grid(row=1, column=0, padx=2, pady=2)
-
-    return _canvas_e1
-
 def create_canvas_dc_motor_buttons(canvas_frame, arduino):
     frame_motor = ttk.Frame(canvas_frame)
     frame_motor.grid(row=3, column=0, pady=10)
@@ -82,8 +69,8 @@ def create_canvas_save_button(canvas_frame, pelvi):
     btn_save = ttk.Button(canvas_frame, text="Save", command=lambda: save_data(pelvi))
     btn_save.grid(row=3, column=2, padx=3, pady=5)
 
-def create_canvas_home_button(canvas_frame, arduino, canvas_xy, canvas_ze0, canvas_e1):
-    btn_home = ttk.Button(canvas_frame, text="Home", command=lambda: home_motors(arduino, [canvas_xy, canvas_ze0, canvas_e1]))
+def create_canvas_home_button(canvas_frame, arduino, canvas_xy, canvas_ze0):
+    btn_home = ttk.Button(canvas_frame, text="Home", command=lambda: home_motors(arduino, [canvas_xy, canvas_ze0]))
     btn_home.grid(row=3, column=1, padx=3, pady=5)
 
 def home_motors(arduino, canvas_areas):
