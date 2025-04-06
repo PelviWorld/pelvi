@@ -17,12 +17,13 @@ struct AxisState {
   bool isHomed;
 };
 
-// NAME, STEP, DIR, MIN, ENABLE, MAX_POS, STEPS_REMAINING, LAST_STEP_TIME, DIRECTION, CURRENT_POSITION, IS_HOMED
-AxisState axes[5] = {
-  {"X",  54,   55,  3,   38,     300.0,   0,               0,              true,      0.0,              false},
-  {"Y",  60,   61,  14,  56,     475.0,   0,               0,              true,      0.0,              false},
-  {"Z",  46,   48,  18,  62,     290.0,   0,               0,              true,      0.0,              false},
-  {"E0", 26,   28,  2,   24,     180.0,   0,               0,              true,      0.0,              false},
+const int nrOfAxes = 4;
+// NAME, STEP, DIR, MINPIN, ENABLE, MAX_POS, STEPS_REMAINING, LAST_STEP_TIME, DIRECTION, CURRENT_POSITION, IS_HOMED
+AxisState axes[nrOfAxes] = {
+  {"X",  54,   55,  3,      38,     300.0,   0,               0,              true,      0.0,              false},
+  {"Y",  60,   61,  14,     56,     475.0,   0,               0,              true,      0.0,              false},
+  {"Z",  46,   48,  18,     62,     290.0,   0,               0,              true,      0.0,              false},
+  {"E0", 26,   28,  2,      24,     180.0,   0,               0,              true,      0.0,              false},
 };
 
 // Konfiguration
@@ -39,20 +40,20 @@ const unsigned long motorDisableDelay = 30000; // 30 Sekunden
 const unsigned long stepDelay = 1000000 / maxSpeed;  // Delay between steps in microseconds
 
 double getCurrentPosition(int axisIndex) {
-  if (axisIndex >= 0 && axisIndex < 5) {
+  if (axisIndex >= 0 && axisIndex < nrOfAxes) {
     return axes[axisIndex].currentPosition;
   }
   return 0.0;
 }
 
 void setCurrentPosition(int axisIndex, double position) {
-  if (axisIndex >= 0 && axisIndex < 5) {
+  if (axisIndex >= 0 && axisIndex < nrOfAxes) {
     axes[axisIndex].currentPosition = position;
   }
 }
 
 void initializePins() {
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < nrOfAxes; i++) {
     pinMode(axes[i].stepPin, OUTPUT);
     pinMode(axes[i].dirPin, OUTPUT);
     pinMode(axes[i].minPin, INPUT_PULLUP);
@@ -74,7 +75,7 @@ void stepMotor(int stepPin) {
 
 void performConcurrentMovements() {
   unsigned long currentTime = micros();
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < nrOfAxes; i++) {
     if (axes[i].stepsRemaining > 0 && (currentTime - axes[i].lastStepTime >= stepDelay)) {
       digitalWrite(axes[i].dirPin, axes[i].direction ? HIGH : LOW);
       stepMotor(axes[i].stepPin);
@@ -106,12 +107,12 @@ void homing() {
   Serial.println("Homing wird ausgeführt...");
 
   unsigned long homingDelay = 1000000 / homingSpeed;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < nrOfAxes; i++) {
     axes[i].stepsRemaining = 0;
     axes[i].isHomed = false;
   }
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < nrOfAxes; i++) {
     if (digitalRead(axes[i].minPin) == LOW) {
       axes[i].isHomed = true;
     } else {
@@ -120,8 +121,8 @@ void homing() {
     }
   }
 
-  while (!(axes[0].isHomed && axes[1].isHomed && axes[2].isHomed && axes[3].isHomed && axes[4].isHomed)) {
-    for (int i = 0; i < 5; i++) {
+  while (!(axes[0].isHomed && axes[1].isHomed && axes[2].isHomed && axes[3].isHomed)) {
+    for (int i = 0; i < nrOfAxes; i++) {
       if (!axes[i].isHomed && digitalRead(axes[i].minPin) == LOW) {
         axes[i].isHomed = true;
       } else if (!axes[i].isHomed) {
@@ -132,7 +133,7 @@ void homing() {
   }
 
   // Set all axes to 0.0 after homing
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < nrOfAxes; i++) {
     setCurrentPosition(i, 0.0);
   }
 
@@ -182,7 +183,7 @@ void processCommand(String command) {
 }
 
 void processAxisCommand(String axis, double value) {
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < nrOfAxes; i++) {
     if (axis == axes[i].name) {
       moveAxis(i, value);
       return;
@@ -207,7 +208,7 @@ void moveAxis(int axisIndex, double target) {
 
 void enableMotors() {
   if (!motorsEnabled) {
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < nrOfAxes; i++) {
       digitalWrite(axes[i].enablePin, LOW);
     }
     motorsEnabled = true;
@@ -217,7 +218,7 @@ void enableMotors() {
 
 void disableMotors() {
   if (motorsEnabled) {
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < nrOfAxes; i++) {
       digitalWrite(axes[i].enablePin, HIGH);
     }
     motorsEnabled = false;
