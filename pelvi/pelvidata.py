@@ -255,6 +255,15 @@ class Pelvidata:
 
         self.__database.commit()
 
+    def update_axis_max_value(self, axisid, maxvalue):
+        self.__database.row_factory = row_dict
+        cur = self.__database.cursor()
+
+        cur.execute("""UPDATE axis SET maxvalue = :maxvalue WHERE axisid = :axisid""",
+                    {'maxvalue': maxvalue, 'axisid': axisid})
+
+        self.__database.commit()
+
     def save_user_data(self, user, position_list, blocked_list):
         self.update_user(user)
         for position in position_list:
