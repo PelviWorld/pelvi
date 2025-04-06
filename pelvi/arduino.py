@@ -8,18 +8,23 @@ class ArduinoMock:
 
     def write(self, data):
         command = data.decode().strip()
-        if command == 'HOMING':
-            self.buffer.append(b'Homing complete\n')
-        elif command.startswith('MOTOR '):
-            self.buffer.append(f'Motor command received {command}\n'.encode())
-        elif command.startswith('X '):
-            self.buffer.append(b'X axis moved\n')
-        elif command.startswith('Y '):
-            self.buffer.append(b'Y axis moved\n')
-        elif command.startswith('Z '):
-            self.buffer.append(b'Z axis moved\n')
-        elif command.startswith('E0 '):
-            self.buffer.append(b'E0 axis moved\n')
+        if command == "INIT":
+            self.buffer.append(b"AXIS X MAX 300")
+            self.buffer.append(b"AXIS Y MAX 475")
+            self.buffer.append(b"AXIS Z MAX 290")
+            self.buffer.append(b"AXIS E0 MAX 180")
+        if command == "HOMING":
+            self.buffer.append(b"Homing complete\n")
+        elif command.startswith("MOTOR "):
+            self.buffer.append(f"Motor command received {command}\n".encode())
+        elif command.startswith("X "):
+            self.buffer.append(b"X axis moved\n")
+        elif command.startswith("Y "):
+            self.buffer.append(b"Y axis moved\n")
+        elif command.startswith("Z "):
+            self.buffer.append(b"Z axis moved\n")
+        elif command.startswith("E0 "):
+            self.buffer.append(b"E0 axis moved\n")
 
     @staticmethod
     def close():
