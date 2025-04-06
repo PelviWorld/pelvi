@@ -22,6 +22,10 @@ class Axis:
     def maxvalue(self):
         return self.__maxvalue
 
+    @maxvalue.setter
+    def maxvalue(self, maxvalue):
+        self.__maxvalue = maxvalue
+
     @property
     def refvalue(self):
         return self.__refvalue
