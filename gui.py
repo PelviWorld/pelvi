@@ -60,6 +60,15 @@ if __name__ == '__main__':
     pelvi = Pelvi()
     arduino = Arduino(arduino_port, arduino_baudrate)
     arduino.send_command('INIT')
+    while not all(arduino.get_axis_max_value(axis) > 0 for axis in ["X", "Y", "Z", "E0"]):
+        pass
+    for axis in ["X", "Y", "Z", "E0"]:
+        if not pelvi.set_axis_max_value(axis, arduino.get_axis_max_value(axis)):
+            print(f"Axis max value {axis} changed")
+        else:
+            print(f"Axis max value {axis} not changed")
+
+    print("Arduino connected and send max axis values.")
     root = create_main_window()
     create_canvas_areas(pelvi, arduino)
 
