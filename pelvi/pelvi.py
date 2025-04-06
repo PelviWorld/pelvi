@@ -160,3 +160,8 @@ class Pelvi:
             if self.__axis_name_for_axis_id(blocked.axis) == axis:
                 blocked.minvalue = minvalue
                 blocked.maxvalue = maxvalue
+
+    def update_all_axis_max_values(self):
+        for device in self.__device_list:
+            for device_axis in device.axislist:
+                self.__pelvidata.update_axis_max_value(device_axis.axisid, device_axis.maxvalue)
