@@ -62,11 +62,17 @@ if __name__ == '__main__':
     arduino.send_command('INIT')
     while not all(arduino.get_axis_max_value(axis) > 0 for axis in ["X", "Y", "Z", "E0"]):
         pass
+    axes_max_correct = True
     for axis in ["X", "Y", "Z", "E0"]:
         if not pelvi.set_axis_max_value(axis, arduino.get_axis_max_value(axis)):
+            axes_max_correct = False
             print(f"Axis max value {axis} changed")
         else:
             print(f"Axis max value {axis} not changed")
+
+    if not axes_max_correct:
+        pelvi.update_all_axis_max_values()
+        print("Axis max values changed. Need to write it to db. Restart the application if somethings looks weird.")
 
     print("Arduino connected and send max axis values.")
     root = create_main_window()
