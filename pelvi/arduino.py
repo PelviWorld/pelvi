@@ -47,6 +47,7 @@ class Arduino:
         self.__serial_connection_timeout = 2
         self.__connect()
         self.__start_serial_thread()
+        self.__axis_max_value = {}
 
     def __del__(self):
         if self.__serial is not None:
@@ -78,14 +79,31 @@ class Arduino:
         else:
             print("Arduino ist nicht verbunden.")
 
+    def get_axis_max_value(self, axis):
+        return self.__axis_max_value.get(axis, 0)
+
     def __start_serial_thread(self):
         self.__serial_thread = threading.Thread(target=self.__read_from_serial)
         self.__serial_thread.daemon = True
         self.__serial_thread.start()
+
+    def __read_axis_max_value(self, line):
+        try:
+            parts = line.split()
+            axis = parts[1]
+            max_value = int(parts[3])
+            self.__axis_max_value[axis] = max_value
+            print(f"Maximalwert für {axis}: {max_value}")
+        except(IndexError, ValueError):
+            print(f"Fehler beim Parsen der Zeile: {line}")
+            return
+
 
     def __read_from_serial(self):
         while True:
             if self.__serial.in_waiting > 0:
                 line = self.__serial.readline().decode('utf-8').rstrip()
                 print(line)
+                if line.startswith("AXIS"):
+                    self.__read_axis_max_value(line)
             time.sleep(0.1)  # Small delay to prevent high CPU usage
