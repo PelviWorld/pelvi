@@ -59,6 +59,7 @@ def create_main_window():
 if __name__ == '__main__':
     pelvi = Pelvi()
     arduino = Arduino(arduino_port, arduino_baudrate)
+    arduino.send_command('INIT')
     root = create_main_window()
     create_canvas_areas(pelvi, arduino)
 
