@@ -141,6 +141,15 @@ void homing() {
   Serial.println("Homing abgeschlossen.");
 }
 
+void initCommand() {
+  for (int i = 0; i < nrOfAxes; i++) {
+    Serial.print("AXIS ");
+    Serial.print(axes[i].name);
+    Serial.print(" MAX ");
+    Serial.println(axes[i].maxPos);
+  }
+}
+
 void controlMotor(bool forward, int lowOnStop = HIGH) {
   if (lowOnStop == LOW) {
     Serial.println("DC Motor gestoppt");
@@ -164,6 +173,11 @@ void processMotorCommand(String command) {
 void processCommand(String command) {
   if (command == "HOMING") {
     homing();
+    return;
+  }
+
+  if (command == "INIT") {
+    initCommand();
     return;
   }
 
