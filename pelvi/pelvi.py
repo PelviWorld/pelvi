@@ -61,6 +61,15 @@ class Pelvi:
         position = self.__find_position(axis)
         return position.position
 
+    def set_axis_max_value(self, axis, max_value):
+        for device in self.__device_list:
+            for device_axis in device.axislist:
+                if device_axis.axisname == axis:
+                    result = device_axis.maxvalue == max_value
+                    device_axis.maxvalue = max_value
+                    return result
+        return False
+
     def save_user_data(self):
         self.__pelvidata.save_user_data(self.__user, self.__position_list, self.__blocked_list)
 
