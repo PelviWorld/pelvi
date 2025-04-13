@@ -68,6 +68,7 @@ void initializePins() {
 }
 
 void stepMotor(int stepPin) {
+  lastMovementTime = millis();
   digitalWrite(stepPin, HIGH);
   delayMicroseconds(2);
   digitalWrite(stepPin, LOW);
