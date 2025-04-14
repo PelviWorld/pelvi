@@ -29,9 +29,9 @@ AxisState axes[nrOfAxes] = {
 // Konfiguration
 const double stepsPerMM = 800.0;      // Schritte pro mm (gemäß Ihrer Kalibrierung)
 const double stepSize = 1.0 / stepsPerMM; // Schrittgröße (in mm)
-const int maxSpeed = 28000;          // Maximale Geschwindigkeit (Schritte pro Sekunde)
+const int maxSpeed = 12000;          // Maximale Geschwindigkeit (Schritte pro Sekunde)
 const int homingSpeed = 25000;       // Homing-Geschwindigkeit (Schritte pro Sekunde)
-const int acceleration = 70;         // Beschleunigung (Schritte pro Sekunde²)
+const int acceleration = 40000;         // Beschleunigung (Schritte pro Sekunde²)
 
 // Variablen für die Motoraktivierung
 unsigned long lastMovementTime = 0;
