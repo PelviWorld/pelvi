@@ -93,7 +93,7 @@ class Arduino:
         try:
             parts = line.split()
             axis = parts[1]
-            max_value = int(parts[3])
+            max_value = int(float(parts[3]))
             self.__axis_max_value[axis] = max_value
             print(f"Maximalwert für {axis}: {max_value}")
         except (IndexError, ValueError):
