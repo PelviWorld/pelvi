@@ -2,6 +2,7 @@ import time
 import serial
 import threading
 
+
 class ArduinoMock:
     def __init__(self):
         self.buffer = []
@@ -9,10 +10,10 @@ class ArduinoMock:
     def write(self, data):
         command = data.decode().strip()
         if command == "INIT":
-            self.buffer.append(b"AXIS X MAX 300\n")
-            self.buffer.append(b"AXIS Y MAX 475\n")
-            self.buffer.append(b"AXIS Z MAX 290\n")
-            self.buffer.append(b"AXIS E0 MAX 180\n")
+            self.buffer.append(b"AXIS X MAX 300.00\n")
+            self.buffer.append(b"AXIS Y MAX 475.00\n")
+            self.buffer.append(b"AXIS Z MAX 290.00\n")
+            self.buffer.append(b"AXIS E0 MAX 180.00\n")
         if command == "HOMING":
             self.buffer.append(b"Homing complete\n")
         elif command.startswith("MOTOR "):
@@ -37,7 +38,8 @@ class ArduinoMock:
     def readline(self):
         if self.buffer:
             return self.buffer.pop(0)
-        return b''
+        return b""
+
 
 class Arduino:
     def __init__(self, port, baudrate=115200):
@@ -94,15 +96,14 @@ class Arduino:
             max_value = int(parts[3])
             self.__axis_max_value[axis] = max_value
             print(f"Maximalwert für {axis}: {max_value}")
-        except(IndexError, ValueError):
+        except (IndexError, ValueError):
             print(f"Fehler beim Parsen der Zeile: {line}")
             return
-
 
     def __read_from_serial(self):
         while True:
             if self.__serial.in_waiting > 0:
-                line = self.__serial.readline().decode('utf-8').rstrip()
+                line = self.__serial.readline().decode("utf-8").rstrip()
                 print(line)
                 if line.startswith("AXIS"):
                     self.__read_axis_max_value(line)
