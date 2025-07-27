@@ -287,8 +287,27 @@ void processMotorCommand(String command)
   }
 }
 
+void emergencyStop()
+{
+  disableMotors();
+  statusLED.fill(statusLED.Color(255, 0, 0));
+  statusLED.show();
+  Serial.println("Not-Aus aktiviert.");
+  for (int axis = 0; axis < nrOfAxes; axis++)
+  {
+    axes[axis].stepsRemaining = 0;
+    axes[axis].currentSpeed = 0;
+  }
+  Serial.println("Alle Achsen gestoppt.");
+}
+
 void processCommand(String command)
 {
+  if (command == "EMERGENCY_STOP")
+  {
+      emergencyStop();
+      return;
+  }
   if (command == "HOMING")
   {
     homing();
