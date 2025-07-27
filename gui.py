@@ -31,6 +31,17 @@ def create_canvas_areas(_pelvi,_arduino):
     pelvi_height = _pelvi.get_axis_range("Y") + _pelvi.get_axis_range("E0")
     scale = monitor_height / pelvi_height
 
+    stop_button = tk.Button(
+        root_canvas,
+        text="STOP",
+        bg="red",
+        fg="white",
+        font=("Arial", 32, "bold"),
+        height=2,
+        command=lambda: arduino.send_command("EMERGENCY_STOP")
+    )
+    stop_button.grid(row=0, column=2, padx=10, pady=10, sticky="ne")
+
     canvas_xy = create_canvas_xy(CanvasArea.create_canvas_area(
         root_canvas, _pelvi, _arduino, "X", "Y", pelvi.get_axis_range("X"), pelvi.get_axis_range("Y"),
         'ressources/background_xy.png', 0, 0, scale
