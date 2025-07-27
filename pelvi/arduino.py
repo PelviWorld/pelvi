@@ -42,14 +42,15 @@ class ArduinoMock:
 
 
 class Arduino:
-    def __init__(self, port, baudrate=115200):
+    def __init__(self, port, baudrate=115200, line_callback=None):
         self.__port = port
         self.__baudrate = baudrate
         self.__serial = None
         self.__serial_connection_timeout = 2
+        self.__axis_max_value = {}
+        self.__line_callback = line_callback
         self.__connect()
         self.__start_serial_thread()
-        self.__axis_max_value = {}
 
     def __del__(self):
         if self.__serial is not None:
@@ -107,4 +108,10 @@ class Arduino:
                 print(line)
                 if line.startswith("AXIS"):
                     self.__read_axis_max_value(line)
+                else:
+                    if self.__line_callback:
+                        self.__line_callback(line)
+                    else:
+                        print("no interpreter for responses installed.")
+
             time.sleep(0.1)  # Small delay to prevent high CPU usage

@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 
 from screeninfo import get_monitors
 
@@ -56,9 +57,14 @@ def create_main_window():
     ttk.Style().theme_use('clam')
     return _root
 
+
+def check_serial_message(line):
+    if line.startswith("Achse steht auf Endschalter"):
+        messagebox.showinfo("Warnung", line)
+
 if __name__ == '__main__':
     pelvi = Pelvi()
-    arduino = Arduino(arduino_port, arduino_baudrate)
+    arduino = Arduino(arduino_port, arduino_baudrate, check_serial_message)
     arduino.send_command('INIT')
     while not all(arduino.get_axis_max_value(axis) > 0 for axis in ["X", "Y", "Z", "E0"]):
         pass
