@@ -331,16 +331,16 @@ void processCommand(String command)
     return;
   }
 
-  String axis = command.substring(0, spaceIndex);
+  String axisName = command.substring(0, spaceIndex);
   float value = command.substring(spaceIndex + 1).toFloat();
-  processAxisCommand(axis, value);
+  processAxisCommand(axisName, value);
 }
 
-void processAxisCommand(String axis, double value)
+void processAxisCommand(String axisName, double value)
 {
   for (int axis = 0; axis < nrOfAxes; axis++)
   {
-    if (axis == axes[axis].name)
+    if (axisName == axes[axis].name)
     {
       moveAxis(axis, value);
       return;
