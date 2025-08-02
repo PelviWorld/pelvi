@@ -18,14 +18,14 @@ class ArduinoMock:
             self.buffer.append(b"Homing complete\n")
         elif command.startswith("MOTOR "):
             self.buffer.append(f"Motor command received {command}\n".encode())
-        elif command.startswith("X "):
-            self.buffer.append(b"X axis moved\n")
-        elif command.startswith("Y "):
-            self.buffer.append(b"Y axis moved\n")
-        elif command.startswith("Z "):
-            self.buffer.append(b"Z axis moved\n")
-        elif command.startswith("E0 "):
-            self.buffer.append(b"E0 axis moved\n")
+        else:
+            self.write_axis(command)
+
+    def write_axis(self, command):
+        parts = command.split()
+        for i in range(0, len(parts) - 1, 2):
+            axis, value = parts[i], parts[i + 1]
+            self.buffer.append(f"Axis {axis} moved to {value}\n".encode())
 
     @staticmethod
     def close():
@@ -69,6 +69,14 @@ class Arduino:
 
     def send_command(self, command):
         if self.__serial:
+            self.__serial.write(command.encode())
+            print(f"Gesendet: {command.strip()}")
+        else:
+            print("Arduino ist nicht verbunden.")
+
+    def send_coordinates_multi(self, axis1, value1, axis2, value2):
+        if self.__serial:
+            command = f"{axis1} {value1} {axis2} {value2}\n"
             self.__serial.write(command.encode())
             print(f"Gesendet: {command.strip()}")
         else:
