@@ -193,6 +193,7 @@ void updateLed()
 
 void homing()
 {
+  emergencyActive = false;
   enableMotors();
   Serial.println("Homing wird ausgeführt...");
 
@@ -219,6 +220,13 @@ void homing()
   // Homing aller Achsen
   while (!(axes[0].isHomed && axes[1].isHomed && axes[2].isHomed && axes[3].isHomed))
   {
+    readNextCommand();
+    if(emergencyActive)
+    {
+      Serial.println("Homing abgebrochen durch Not-Aus.");
+      disableMotors();
+      return;
+    }
     for (int axis = 0; axis < nrOfAxes; axis++)
     {
       if (!axes[axis].isHomed && digitalRead(axes[axis].minPin) == LOW)
