@@ -28,6 +28,13 @@ struct AxisState
   float accelerationPerMicro;
 };
 
+// Hilfsstruktur zum Zerlegen von Strings
+struct StringPair {
+  String first;
+  String rest;
+  bool endOfString;
+};
+
 const int nrOfAxes = 4;
 AxisState axes[nrOfAxes] = {
     {"X", 54, 55, 3, 38, 300.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
@@ -46,6 +53,7 @@ const int microseconsPerSecond = 1000000; // Mikrosekunden pro Sekunde
 // Variablen für die Motoraktivierung
 unsigned long lastMovementTime = 0;
 bool motorsEnabled = true;
+bool emergencyActive = false;                 // Not-Aus Status
 const unsigned long motorDisableDelay = 5000; // 5 Sekunden nach der letzten Bewegung
 
 double getCurrentPosition(int axisIndex)
@@ -339,19 +347,50 @@ void processCommand(String command)
     return;
   }
 
-  String axisName = command.substring(0, spaceIndex);
-  float value = command.substring(spaceIndex + 1).toFloat();
-  processAxisCommand(axisName, value);
+  processAxisCommand(command);
 }
 
-void processAxisCommand(String axisName, double value)
+StringPair splitString(const String& input) {
+  int spaceIndex = input.indexOf(' ');
+    if (spaceIndex == -1) {
+        return {input, "", true};
+    }
+    String first = input.substring(0, spaceIndex);
+    String rest = input.substring(spaceIndex + 1);
+    rest.trim();
+    return {first, rest, rest.indexOf(' ') != -1};
+}
+
+void processAxisCommand(String command)
 {
-  for (int axis = 0; axis < nrOfAxes; axis++)
-  {
-    if (axisName == axes[axis].name)
-    {
-      moveAxis(axis, value);
-      return;
+  while (command.length() > 0) {
+    StringPair axisPair = splitString(command);
+    String axisName = axisPair.first;
+    command = axisPair.rest;
+    if (axisName.length() == 0) {
+      Serial.println("Ungültiger Achsenname.");
+      continue;
+    }
+
+    StringPair valuePair = splitString(command);
+    float value = valuePair.first.toFloat();
+    if (value == 0.0 && valuePair.first != "0" && valuePair.first != "0.0") {
+      Serial.println("Ungültiger Zahlenwert für Achse " + axisName + ": " + valuePair.first);
+      command = valuePair.rest;
+      continue;
+    }
+    command = valuePair.rest;
+
+    bool axisFound = false;
+    for (int axis = 0; axis < nrOfAxes; axis++) {
+      if (axisName == axes[axis].name) {
+        moveAxis(axis, value);
+        axisFound = true;
+        break;
+      }
+    }
+    if (!axisFound) {
+      Serial.println("Unbekannte Achse: " + axisName);
     }
   }
 }
