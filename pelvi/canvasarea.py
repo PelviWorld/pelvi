@@ -86,7 +86,7 @@ class CanvasArea:
             return False
 
         if self.axis1 == self.axis2:
-            self.arduino.send_coordinates(self.axis1, self.pelvi.move_axis_to(self.axis1, x))
+            self.arduino.send_coordinates(self.axis1, self.pelvi.move_axis_to(self.axis1, y))
         else:
            self.arduino.send_coordinates_multi(self.axis1, self.pelvi.move_axis_to(self.axis1, x), self.axis2, self.pelvi.move_axis_to(self.axis2, y))
 

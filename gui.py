@@ -7,7 +7,7 @@ from screeninfo import get_monitors
 from pelvi.pelvi import Pelvi
 from pelvi.arduino import Arduino
 from pelvi.canvasarea import CanvasArea
-from pelvi.buttoncreator import create_canvas_xy, create_canvas_ze0_buttons, \
+from pelvi.buttoncreator import create_canvas_back, create_canvas_seat, create_canvas_leg, \
     create_canvas_dc_motor_buttons, create_canvas_save_button, create_canvas_home_button
 import configparser
 
@@ -25,10 +25,10 @@ def create_canvas_areas(_pelvi,_arduino):
 
     # Get the primary monitor's dimensions
     monitor = get_monitors()[0]
-    monitor_height = monitor.height - 450
+    monitor_height = monitor.height - 270
 
     # Calculate the ratio between the monitor and the pelvi
-    pelvi_height = _pelvi.get_axis_range("Y1") + _pelvi.get_axis_range("Y2")
+    pelvi_height = _pelvi.get_axis_range("Y1") + _pelvi.get_axis_range("Y2") + _pelvi.get_axis_range("Y3")
     scale = monitor_height / pelvi_height
 
     stop_button = tk.Button(
@@ -42,18 +42,23 @@ def create_canvas_areas(_pelvi,_arduino):
     )
     stop_button.grid(row=0, column=2, padx=10, pady=10, sticky="ne")
 
-    canvas_xy = create_canvas_xy(CanvasArea.create_canvas_area(
+    canvas_back = create_canvas_back(CanvasArea.create_canvas_area(
         root_canvas, _pelvi, _arduino, "X1", "Y1", pelvi.get_axis_range("X1"), pelvi.get_axis_range("Y1"),
         'ressources/background_xy.png', 0, 0, scale
     ), root_canvas)
 
-    canvas_ze0 = create_canvas_ze0_buttons(CanvasArea.create_canvas_area(
+    canvas_seat = create_canvas_seat(CanvasArea.create_canvas_area(
         root_canvas, _pelvi, _arduino, "X2", "Y2", pelvi.get_axis_range("X2"), pelvi.get_axis_range("Y2"),
         'ressources/background_ze0.png', 1, 0, scale
     ), root_canvas)
 
+    canvas_leg = create_canvas_leg(CanvasArea.create_canvas_area(
+        root_canvas, _pelvi, _arduino, "Y3", "Y3", 100, pelvi.get_axis_range("Y3"),
+        'ressources/background_e1.png', 2, 0, scale
+    ), root_canvas)
+
     create_canvas_dc_motor_buttons(root_canvas, arduino)
-    create_canvas_home_button(root_canvas, arduino, canvas_xy, canvas_ze0)
+    create_canvas_home_button(root_canvas, arduino, canvas_back, canvas_seat, canvas_leg)
     create_canvas_save_button(root_canvas, pelvi)
 
 def create_main_window():
@@ -100,6 +105,7 @@ if __name__ == '__main__':
     arduino.send_coordinates('Y1', pelvi.get_axis_value("Y1"))
     arduino.send_coordinates('X2', pelvi.get_axis_value("X2"))
     arduino.send_coordinates('Y2', pelvi.get_axis_value("Y2"))
+    arduino.send_coordinates('Y3', pelvi.get_axis_value("Y3"))
 
     # Hauptschleife starten
     root.mainloop()
