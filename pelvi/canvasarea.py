@@ -13,7 +13,7 @@ class CanvasArea:
         self.point = None
         self.axis1 = axis1
         self.axis2 = axis2
-        self.has_blocked_area = (self.axis1 == "X" and self.axis2 == "Y")
+        self.has_blocked_area = (self.axis1 == "X1" and self.axis2 == "Y1")
 
     @classmethod
     def create_canvas_area(cls, parent, pelvi, arduino, axis1, axis2, width, height, background_image, row, column, scale):
@@ -57,8 +57,8 @@ class CanvasArea:
 
     def update_red_rectangle(self):
         # Get current rectangle coordinates from pelvi
-        rectangle_left, rectangle_right = self.pelvi.get_blocked_area("X")
-        rectangle_top, rectangle_bottom = self.pelvi.get_blocked_area("Y")
+        rectangle_left, rectangle_right = self.pelvi.get_blocked_area("X1")
+        rectangle_top, rectangle_bottom = self.pelvi.get_blocked_area("Y1")
 
         self.canvas.delete('red_rectangle')
 
@@ -95,19 +95,19 @@ class CanvasArea:
         return True
 
     def is_point_inside_rectangle(self, x_mm, y_mm):
-        return ((self.pelvi.get_blocked_area("X")[0] <= x_mm <= self.pelvi.get_blocked_area("X")[1])
-                and (self.pelvi.get_blocked_area("Y")[0] <= y_mm <= self.pelvi.get_blocked_area("Y")[1]))
+        return ((self.pelvi.get_blocked_area("X1")[0] <= x_mm <= self.pelvi.get_blocked_area("X1")[1])
+                and (self.pelvi.get_blocked_area("Y1")[0] <= y_mm <= self.pelvi.get_blocked_area("Y1")[1]))
 
     def is_rectangle_on_point(self, left, top, right, bottom):
-        points = [(self.pelvi.get_axis_value("X"), self.pelvi.get_axis_value("Y"))]
+        points = [(self.pelvi.get_axis_value("X1"), self.pelvi.get_axis_value("Y1"))]
         for x, y in points:
             if left <= x <= right and top <= y <= bottom:
                 return True
         return False
 
     def adjust_blocked_position(self, dx=0, dy=0):
-        rectangle_left, rectangle_right = self.pelvi.get_blocked_area("X")
-        rectangle_top, rectangle_bottom = self.pelvi.get_blocked_area("Y")
+        rectangle_left, rectangle_right = self.pelvi.get_blocked_area("X1")
+        rectangle_top, rectangle_bottom = self.pelvi.get_blocked_area("Y1")
 
         new_left = rectangle_left + dx
         new_top = rectangle_top + dy
@@ -120,19 +120,19 @@ class CanvasArea:
         if new_top < 0:
             new_top = 0
             new_bottom = rectangle_bottom - rectangle_top
-        if new_right > self.pelvi.get_axis_range("X"):
-            new_right = self.pelvi.get_axis_range("X")
-            new_left = self.pelvi.get_axis_range("X") - (rectangle_right - rectangle_left)
-        if new_bottom > self.pelvi.get_axis_range("Y"):
-            new_bottom = self.pelvi.get_axis_range("Y")
-            new_top = self.pelvi.get_axis_range("Y") - (rectangle_bottom - rectangle_top)
+        if new_right > self.pelvi.get_axis_range("X1"):
+            new_right = self.pelvi.get_axis_range("X1")
+            new_left = self.pelvi.get_axis_range("X1") - (rectangle_right - rectangle_left)
+        if new_bottom > self.pelvi.get_axis_range("Y1"):
+            new_bottom = self.pelvi.get_axis_range("Y1")
+            new_top = self.pelvi.get_axis_range("Y1") - (rectangle_bottom - rectangle_top)
 
         if self.is_rectangle_on_point(new_left, new_top, new_right, new_bottom):
             print("Blockierte Position kann nicht auf den aktuellen Punkt verschoben werden.")
             return
 
-        self.pelvi.update_blocked_area("X", new_left, new_right)
-        self.pelvi.update_blocked_area("Y", new_top, new_bottom)
+        self.pelvi.update_blocked_area("X1", new_left, new_right)
+        self.pelvi.update_blocked_area("Y1", new_top, new_bottom)
 
         self.update_red_rectangle()
 

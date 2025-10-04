@@ -6,13 +6,13 @@ def create_canvas_xy(_canvas_xy, _canvas_frame):
     button_frame_xy = ttk.Frame(frame_xy)
     button_frame_xy.grid(pady=5)
 
-    btn_x_negative = ttk.Button(button_frame_xy, text='←', command=lambda: _canvas_xy.move_by("X", -10), width=3)
+    btn_x_negative = ttk.Button(button_frame_xy, text='←', command=lambda: _canvas_xy.move_by("X1", -10), width=3)
     btn_x_negative.grid(row=0, column=0, padx=2, pady=2)
-    btn_x_positive = ttk.Button(button_frame_xy, text='→', command=lambda: _canvas_xy.move_by("X", 10), width=3)
+    btn_x_positive = ttk.Button(button_frame_xy, text='→', command=lambda: _canvas_xy.move_by("X1", 10), width=3)
     btn_x_positive.grid(row=0, column=1, padx=2, pady=2)
-    btn_y_positive = ttk.Button(button_frame_xy, text='↓', command=lambda: _canvas_xy.move_by("Y", 10), width=3)
+    btn_y_positive = ttk.Button(button_frame_xy, text='↓', command=lambda: _canvas_xy.move_by("Y1", 10), width=3)
     btn_y_positive.grid(row=1, column=0, padx=2, pady=2)
-    btn_y_negative = ttk.Button(button_frame_xy, text='↑', command=lambda: _canvas_xy.move_by("Y", -10), width=3)
+    btn_y_negative = ttk.Button(button_frame_xy, text='↑', command=lambda: _canvas_xy.move_by("Y1", -10), width=3)
     btn_y_negative.grid(row=1, column=1, padx=2, pady=2)
 
     _canvas_xy.update_red_rectangle()
@@ -42,13 +42,13 @@ def create_canvas_ze0_buttons(_canvas_ze0, _canvas_frame):
     button_frame_ze0 = ttk.Frame(frame_ze0)
     button_frame_ze0.grid(pady=5)
 
-    btn_z_negative = ttk.Button(button_frame_ze0, text='←', command=lambda: _canvas_ze0.move_by("Z", -10), width=3)
+    btn_z_negative = ttk.Button(button_frame_ze0, text='←', command=lambda: _canvas_ze0.move_by("X2", -10), width=3)
     btn_z_negative.grid(row=0, column=0, padx=2, pady=2)
-    btn_z_positive = ttk.Button(button_frame_ze0, text='→', command=lambda: _canvas_ze0.move_by("Z", 10), width=3)
+    btn_z_positive = ttk.Button(button_frame_ze0, text='→', command=lambda: _canvas_ze0.move_by("X2", 10), width=3)
     btn_z_positive.grid(row=0, column=1, padx=2, pady=2)
-    btn_e0_negative = ttk.Button(button_frame_ze0, text='↓', command=lambda: _canvas_ze0.move_by("E0", 10), width=3)
+    btn_e0_negative = ttk.Button(button_frame_ze0, text='↓', command=lambda: _canvas_ze0.move_by("Y2", 10), width=3)
     btn_e0_negative.grid(row=1, column=0, padx=2, pady=2)
-    btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=lambda: _canvas_ze0.move_by("E0", -10), width=3)
+    btn_e0_positive = ttk.Button(button_frame_ze0, text='↑', command=lambda: _canvas_ze0.move_by("Y2", -10), width=3)
     btn_e0_positive.grid(row=1, column=1, padx=2, pady=2)
 
     return _canvas_ze0

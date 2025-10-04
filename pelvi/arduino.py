@@ -10,10 +10,11 @@ class ArduinoMock:
     def write(self, data):
         command = data.decode().strip()
         if command == "INIT":
-            self.buffer.append(b"AXIS X MAX 300.00\n")
-            self.buffer.append(b"AXIS Y MAX 475.00\n")
-            self.buffer.append(b"AXIS Z MAX 290.00\n")
-            self.buffer.append(b"AXIS E0 MAX 180.00\n")
+            self.buffer.append(b"AXIS X1 MAX 300.00\n")
+            self.buffer.append(b"AXIS Y1 MAX 475.00\n")
+            self.buffer.append(b"AXIS X2 MAX 290.00\n")
+            self.buffer.append(b"AXIS Y2 MAX 180.00\n")
+            self.buffer.append(b"AXIS Y3 MAX 180.00\n")
         if command == "HOMING":
             self.buffer.append(b"Homing complete\n")
         elif command.startswith("MOTOR "):

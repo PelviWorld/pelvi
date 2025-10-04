@@ -28,7 +28,7 @@ def create_canvas_areas(_pelvi,_arduino):
     monitor_height = monitor.height - 450
 
     # Calculate the ratio between the monitor and the pelvi
-    pelvi_height = _pelvi.get_axis_range("Y") + _pelvi.get_axis_range("E0")
+    pelvi_height = _pelvi.get_axis_range("Y1") + _pelvi.get_axis_range("Y2")
     scale = monitor_height / pelvi_height
 
     stop_button = tk.Button(
@@ -43,12 +43,12 @@ def create_canvas_areas(_pelvi,_arduino):
     stop_button.grid(row=0, column=2, padx=10, pady=10, sticky="ne")
 
     canvas_xy = create_canvas_xy(CanvasArea.create_canvas_area(
-        root_canvas, _pelvi, _arduino, "X", "Y", pelvi.get_axis_range("X"), pelvi.get_axis_range("Y"),
+        root_canvas, _pelvi, _arduino, "X1", "Y1", pelvi.get_axis_range("X1"), pelvi.get_axis_range("Y1"),
         'ressources/background_xy.png', 0, 0, scale
     ), root_canvas)
 
     canvas_ze0 = create_canvas_ze0_buttons(CanvasArea.create_canvas_area(
-        root_canvas, _pelvi, _arduino, "Z", "E0", pelvi.get_axis_range("Z"), pelvi.get_axis_range("E0"),
+        root_canvas, _pelvi, _arduino, "X2", "Y2", pelvi.get_axis_range("X2"), pelvi.get_axis_range("Y2"),
         'ressources/background_ze0.png', 1, 0, scale
     ), root_canvas)
 
@@ -77,10 +77,10 @@ if __name__ == '__main__':
     pelvi = Pelvi()
     arduino = Arduino(arduino_port, arduino_baudrate, check_serial_message)
     arduino.send_command('INIT')
-    while not all(arduino.get_axis_max_value(axis) > 0 for axis in ["X", "Y", "Z", "E0"]):
+    while not all(arduino.get_axis_max_value(axis) > 0 for axis in ["X1", "Y1", "X2", "Y2", "Y3"]):
         pass
     axes_max_correct = True
-    for axis in ["X", "Y", "Z", "E0"]:
+    for axis in ["X1", "Y1", "X2", "Y2", "Y3"]:
         if not pelvi.set_axis_max_value(axis, arduino.get_axis_max_value(axis)):
             axes_max_correct = False
             print(f"Axis max value {axis} changed")
@@ -96,10 +96,10 @@ if __name__ == '__main__':
     create_canvas_areas(pelvi, arduino)
 
     # Startpositionen setzen
-    arduino.send_coordinates('X', pelvi.get_axis_value("X"))
-    arduino.send_coordinates('Y', pelvi.get_axis_value("Y"))
-    arduino.send_coordinates('Z', pelvi.get_axis_value("Z"))
-    arduino.send_coordinates('E0', pelvi.get_axis_value("E0"))
+    arduino.send_coordinates('X1', pelvi.get_axis_value("X1"))
+    arduino.send_coordinates('Y1', pelvi.get_axis_value("Y1"))
+    arduino.send_coordinates('X2', pelvi.get_axis_value("X2"))
+    arduino.send_coordinates('Y2', pelvi.get_axis_value("Y2"))
 
     # Hauptschleife starten
     root.mainloop()

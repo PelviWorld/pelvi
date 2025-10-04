@@ -13,7 +13,7 @@ arduino_port: str = config['Arduino'].get('port')
 arduino_baudrate: int = config['Arduino'].getint('baudrate')
 testing: bool = config['General'].getboolean('testing', False) if config.has_section('General') else False
 
-axes = ["X", "Y", "Z", "E0"]
+axes = ["X1", "Y1", "X2", "Y2", "Y3"]
 axis_map = {axis: 0 for axis in axes}
 axes_status = {axis: False for axis in axes}
 

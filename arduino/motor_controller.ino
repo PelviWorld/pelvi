@@ -37,10 +37,11 @@ struct StringPair {
 
 const int nrOfAxes = 4;
 AxisState axes[nrOfAxes] = {
-    {"X", 54, 55, 3, 38, 300.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
-    {"Y", 60, 61, 14, 56, 475.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
-    {"Z", 46, 48, 18, 62, 290.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
-    {"E0", 26, 28, 2, 24, 180.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0}};
+    {"X1", 54, 55, 3,  38, 300.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
+    {"Y1", 60, 61, 14, 56, 475.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
+    {"X2", 46, 48, 18, 62, 290.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
+    {"Y2", 26, 28, 2,  24, 180.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0}};
+    {"Y3", 36, 34, 15, 30, 180.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0}};
 
 // Konfiguration
 const double stepsPerMM = 800.0;          // Schritte pro mm (gemäß Ihrer Kalibrierung)
