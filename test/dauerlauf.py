@@ -18,6 +18,7 @@ testing: bool = config['General'].getboolean('testing', False) if config.has_sec
 axes = ["X1", "Y1", "X2", "Y2", "Y3"]
 axis_map = {axis: 0 for axis in axes}
 axes_status = {axis: False for axis in axes}
+homing_done = False
 
 with open('move_commands.json', 'r') as f:
     move_commands = json.load(f)
@@ -56,6 +57,7 @@ def parse_axis_message(line):
     return None, None
 
 def check_serial_message(line):
+    global homing_done
     if line.startswith("Achse steht auf Endschalter"):
         print(f"Warnung {line}.")
     elif line.startswith("Axis"):
@@ -66,11 +68,17 @@ def check_serial_message(line):
             print(f"Achse {axis} ist auf Position {position} angekommen.")
         else:
             print(f"Unbekanntes Format: {line}")
+    elif line.startswith("Homing"):
+        homing_done = True
 
 if __name__ == '__main__':
     pelvi = Pelvi()
     arduino = Arduino(arduino_port, arduino_baudrate, check_serial_message)
     arduino.send_command('INIT')
+    arduino.send_command('HOMING')
+    while not homing_done:
+        pass
+    print("Homing abgeschlossen. Starting next steps.")
 
     for axis in axes:
         set_axis_moving(axis)
