@@ -35,12 +35,12 @@ struct StringPair {
   bool endOfString;
 };
 
-const int nrOfAxes = 4;
+const int nrOfAxes = 5;
 AxisState axes[nrOfAxes] = {
     {"X1", 54, 55, 3,  38, 300.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
     {"Y1", 60, 61, 14, 56, 475.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
     {"X2", 46, 48, 18, 62, 290.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
-    {"Y2", 26, 28, 2,  24, 180.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0}};
+    {"Y2", 26, 28, 2,  24, 180.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
     {"Y3", 36, 34, 15, 30, 180.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0}};
 
 // Konfiguration
@@ -200,6 +200,15 @@ void updateLed()
   }
 }
 
+bool allHomed() {
+  for (int axis = 0; axis < nrOfAxes; axis++) {
+    if (!axes[axis].isHomed) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void homing()
 {
   emergencyActive = false;
@@ -226,8 +235,7 @@ void homing()
     }
   }
 
-  // Homing aller Achsen
-  while (!(axes[0].isHomed && axes[1].isHomed && axes[2].isHomed && axes[3].isHomed))
+  while (!allHomed())
   {
     readNextCommand();
     if(emergencyActive)
@@ -250,7 +258,6 @@ void homing()
     }
   }
 
-  // Set all axes to 0.0 after homing
   for (int axis = 0; axis < nrOfAxes; axis++)
   {
     setCurrentPosition(axis, 0.0);
@@ -353,13 +360,13 @@ void processCommand(String command)
 
 StringPair splitString(const String& input) {
   int spaceIndex = input.indexOf(' ');
-    if (spaceIndex == -1) {
-        return {input, "", true};
-    }
-    String first = input.substring(0, spaceIndex);
-    String rest = input.substring(spaceIndex + 1);
-    rest.trim();
-    return {first, rest, rest.indexOf(' ') != -1};
+  if (spaceIndex == -1) {
+    return {input, "", true};
+  }
+  String first = input.substring(0, spaceIndex);
+  String rest = input.substring(spaceIndex + 1);
+  rest.trim();
+  return {first, rest, rest.indexOf(' ') != -1};
 }
 
 void processAxisCommand(String command)
