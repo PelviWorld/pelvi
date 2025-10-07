@@ -1,3 +1,5 @@
+import sys
+sys.path.append('..')
 from pelvi.arduino import Arduino
 from pelvi.pelvi import Pelvi
 
