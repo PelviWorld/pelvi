@@ -21,6 +21,7 @@ struct AxisState
   long stepsRemaining;
   unsigned long lastStepTime;
   bool direction;
+  bool movement;
   double currentPosition;
   bool isHomed;
   float currentSpeed;
@@ -37,11 +38,11 @@ struct StringPair {
 
 const int nrOfAxes = 5;
 AxisState axes[nrOfAxes] = {
-    {"X1", 54, 55, 3,  38, 300.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
-    {"Y1", 60, 61, 14, 56, 475.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
-    {"X2", 46, 48, 18, 62, 290.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
-    {"Y2", 26, 28, 2,  24, 180.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0},
-    {"Y3", 36, 34, 15, 30, 180.0, 0, 0, true, 0.0, false, 0.0, 0.0, 0.0}};
+    {"X1", 54, 55, 3,  38, 300.0, 0, 0, true, false, 0.0, false, 0.0, 0.0, 0.0},
+    {"Y1", 60, 61, 14, 56, 475.0, 0, 0, true, false, 0.0, false, 0.0, 0.0, 0.0},
+    {"X2", 46, 48, 18, 62, 290.0, 0, 0, true, false, 0.0, false, 0.0, 0.0, 0.0},
+    {"Y2", 26, 28, 2,  24, 180.0, 0, 0, true, false, 0.0, false, 0.0, 0.0, 0.0},
+    {"Y3", 36, 34, 15, 30, 180.0, 0, 0, true, false, 0.0, false, 0.0, 0.0, 0.0}};
 
 // Konfiguration
 const double stepsPerMM = 800.0;          // Schritte pro mm (gemäß Ihrer Kalibrierung)
@@ -102,7 +103,7 @@ void stepMotor(int stepPin)
 void moveStep(const int axis, const unsigned long currentTime, const int deltaTime)
 {
   const unsigned long stepInterval = microseconsPerSecond / axes[axis].currentSpeed;
-  if (deltaTime >= stepInterval)
+  if(axes[axis].movement && checkMovementFinished(axis))
   {
     digitalWrite(axes[axis].dirPin, axes[axis].direction ? HIGH : LOW);
     stepMotor(axes[axis].stepPin);
@@ -112,12 +113,10 @@ void moveStep(const int axis, const unsigned long currentTime, const int deltaTi
     double position = getCurrentPosition(axis);
     position += axes[axis].direction ? stepSize : -stepSize;
     setCurrentPosition(axis, position);
-
-    checkMovementFinished(axis);
   }
 }
 
-void checkMovementFinished(const int axis)
+bool checkMovementFinished(const int axis)
 {
   if (axes[axis].stepsRemaining == 0)
   {
@@ -126,6 +125,7 @@ void checkMovementFinished(const int axis)
     Serial.print(axes[axis].name);
     Serial.print(" hat seine Bewegung beendet bei: ");
     Serial.println(axes[axis].currentPosition);
+    axes[axis].movement = false;
   } else if( axes[axis].direction == false && axes[axis].stepsRemaining > 100 && digitalRead(axes[axis].minPin) == LOW)
   {
     // Wenn wir Richtung low (false) fahren und die Achse auf den Endschalter trifft, stoppen wir sie
@@ -137,7 +137,9 @@ void checkMovementFinished(const int axis)
     Serial.print(axes[axis].name);
     Serial.print(" befindet sich aber auf Position: ");
     Serial.println(axes[axis].currentPosition);
+    axes[axis].movement = false;
   }
+  return axes[axis].movement;
 }
 
 void calculateCurrentSpeed(const int axis, const unsigned long deltaTime)
@@ -406,6 +408,7 @@ void processAxisCommand(String command)
 void moveAxis(int axis, double target)
 {
   enableMotors();
+  axes[axis].movement = true;
 
   if (target > axes[axis].maxPos)
   {
