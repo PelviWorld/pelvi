@@ -98,14 +98,11 @@ if __name__ == '__main__':
 
     print("Arduino connected and send max axis values.")
 
-    for axis in axes:
-        arduino.send_coordinates(axis, pelvi.get_axis_value(axis))
-
     for moves in move_commands:
-        check_movement()
         print(f"nächste/r Bewegungsbefehl/e: {moves}")
         for axis, position in moves:
             move_axis(arduino, axis, position)
+        check_movement()
 
     check_movement()
     print("Tests sind abgeschlossen.")
